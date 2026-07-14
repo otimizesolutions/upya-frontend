@@ -66,8 +66,13 @@ export const useAuthStore = create<AuthState>()(
         if (!error && state?.accessToken) {
           api.defaults.headers.common.Authorization = `Bearer ${state.accessToken}`;
         }
+        // Sempre libera a UI, mesmo se o rehydrate falhar.
         useAuthStore.getState().setHasHydrated(true);
       },
     },
   ),
 );
+
+useAuthStore.persist.onFinishHydration(() => {
+  useAuthStore.getState().setHasHydrated(true);
+});
