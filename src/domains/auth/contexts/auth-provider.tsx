@@ -1,31 +1,35 @@
-import { PropsWithChildren, useEffect } from 'react';
+import { type PropsWithChildren, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { type AxiosError } from 'axios';
 import { AuthContext } from './auth-context';
 import { useAuthenticatedUser } from '@/domains/users/queries';
-import { useQueryClient } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
 import { api } from '@/lib/axios';
-import { TOKEN_KEY } from '@/config';
 import { refresh } from '../services';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuthStore } from '@/domains/auth/stores';
 
 export type AuthProviderProps = PropsWithChildren;
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const { data: user } = useAuthenticatedUser();
   const queryClient = useQueryClient();
+  const setUser = useAuthStore((state) => state.setUser);
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
+  const refreshToken = useAuthStore((state) => state.refreshToken);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
-  console.log(user);
+  useEffect(() => {
+    setUser(user ?? null);
+  }, [setUser, user]);
 
   useEffect(() => {
     const interceptorId = api.interceptors.response.use(
       (response) => response,
       async (error: AxiosError) => {
-        let refreshToken: string | null = '';
-        try {
-          refreshToken = await AsyncStorage.getItem(TOKEN_KEY);
-        } catch {}
+        const storedRefresh =
+          useAuthStore.getState().refreshToken || refreshToken;
 
-        if (!refreshToken) {
+        if (!storedRefresh) {
           return Promise.reject(error);
         }
         if (error.response?.status !== 401) {
@@ -35,15 +39,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           'auth/token/refresh',
         );
         if (isRefreshToken) {
-          await AsyncStorage.removeItem(TOKEN_KEY);
+          await clearAuth();
           await queryClient.refetchQueries({
             queryKey: ['authenticated-user'],
           });
           return Promise.reject(error);
         }
         try {
-          const { access } = await refresh(refreshToken);
-          api.defaults.headers.common.Authorization = `Bearer ${access}`;
+          const { access } = await refresh(storedRefresh);
+          setAccessToken(access);
           return api.request({
             ...(error.config || {}),
             headers: {
@@ -51,17 +55,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             },
           });
         } catch {
-          await AsyncStorage.removeItem(TOKEN_KEY);
+          await clearAuth();
           return Promise.reject(error);
         }
       },
     );
 
     return () => api.interceptors.response.eject(interceptorId);
-  }, [queryClient]);
+  }, [clearAuth, queryClient, refreshToken, setAccessToken]);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user }}>
+    <AuthContext.Provider
+      value={{ user: user ?? null, isAuthenticated: isAuthenticated || !!user }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,68 +1,41 @@
-import { ThemeButtonVariant, useTheme } from '@/domains/theme/contexts';
-import { PropsWithChildren } from 'react';
-import { Text, StyleSheet, TextProps } from 'react-native';
-import { Link, LinkProps } from 'expo-router';
+import type { PropsWithChildren } from 'react';
+import { Link, type LinkProps } from 'expo-router';
+import { cn } from '@/lib/utils';
+import { Text } from '@/components/ui/text';
 
 export type ButtonLinkProps = PropsWithChildren<
   Omit<LinkProps, 'children'> & {
-    variant?: ThemeButtonVariant;
-    textStyle?: Pick<TextProps, 'style'>['style'];
+    className?: string;
+    textClassName?: string;
   }
 >;
 
 export const ButtonLink = ({
   children,
   style,
-  textStyle,
-  variant = 'default',
+  className,
+  textClassName,
   ...props
 }: ButtonLinkProps) => {
-  const { buttonVariants } = useTheme();
-  const button = buttonVariants[variant];
-
   return (
     <Link
-      style={[
-        styles.button,
-        {
-          backgroundColor: button.backgroundColor,
-          borderColor: button.borderColor,
-          borderWidth: button.borderWidth,
-          paddingHorizontal: button.paddingHorizontal,
-          paddingVertical: button.paddingVertical,
-          borderRadius: button.borderRadius,
-        },
-        style,
-      ]}
+      className={cn(
+        'items-center justify-center rounded-full border border-primary bg-primary px-2.5 py-4',
+        className,
+      )}
+      style={style}
       {...props}
     >
       {typeof children === 'string' ? (
         <Text
-          style={[
-            styles.text,
-            {
-              color: button.color,
-              fontSize: button.fontSize,
-              fontWeight: button.fontWeight,
-            },
-            textStyle,
-          ]}
+          variant="labelMd"
+          className={cn('text-center text-primary-foreground', textClassName)}
         >
           {children}
         </Text>
       ) : (
-        <>{children}</>
+        children
       )}
     </Link>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    textAlign: 'center',
-  },
-});

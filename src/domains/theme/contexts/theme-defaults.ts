@@ -17,7 +17,7 @@ import {
 
 export const inputDefault: ThemeInputValue = {
   backgroundColor: paper,
-  borderColor: paper,
+  borderColor: '#cbcfd4',
   borderWidth: 1,
   color: paperForeground,
   borderRadius: 10,
@@ -41,13 +41,13 @@ export const buttonDefault: ThemeButtonValue = {
   borderRadius: 50,
   color: primaryForeground,
   fontSize: regular,
-  fontWeight: '500',
+  fontWeight: '600',
 };
 
 export const linkDefault: ThemeLinkValue = {
   color: primary,
   fontSize: regular,
-  fontWeight: '500',
+  fontWeight: '600',
 };
 
 export const formMessageDefault: ThemeFormMessageValue = {

@@ -1,29 +1,31 @@
-import {
-  StyleSheet,
-  View,
-  SafeAreaView,
-  Image,
-  Text,
-  Dimensions,
-} from 'react-native';
+import { Dimensions, Image, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import image from '@/assets/images/welcome.png';
 import { ButtonLink } from '@/components/button-link';
 import { Link } from '@/components/link';
-import { backgroundColor } from '@/domains/theme/constants/colors';
+import { Text } from '@/components/ui/text';
 
 export default function HomePage() {
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.innerContainer}>
-        <View style={styles.content}>
-          <Text style={styles.title}>Template do Expo</Text>
-          <Image style={styles.image} source={image} alt="preview image" />
+    <View className="flex-1 bg-background">
+      <SafeAreaView className="flex-1">
+        <View className="flex-1 items-stretch justify-center">
+          <Text variant="headingLg" className="mb-5 text-center">
+            UPYA
+          </Text>
+          <Image
+            className="w-full"
+            style={{ height: Dimensions.get('window').height * 0.5 }}
+            source={image}
+            alt="preview image"
+            resizeMode="contain"
+          />
 
-          <View style={styles.registerContainer}>
+          <View className="px-24">
             <ButtonLink href="/auth/register" replace>
               Começar
             </ButtonLink>
-            <Text style={styles.loginText}>
+            <Text variant="paragraphSm" className="mt-5 text-center">
               Já tem conta?{' '}
               <Link href="/auth/login" replace>
                 Entrar
@@ -35,38 +37,3 @@ export default function HomePage() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor,
-  },
-  innerContainer: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    alignItems: 'stretch',
-    justifyContent: 'center',
-  },
-  title: {
-    color: '#222',
-    textAlign: 'center',
-    fontWeight: 'bold',
-    marginBottom: 20,
-    fontSize: 26,
-  },
-  image: {
-    width: '100%',
-    height: Dimensions.get('window').height * 0.5,
-    resizeMode: 'contain',
-  },
-  registerContainer: {
-    paddingHorizontal: 100,
-  },
-  loginText: {
-    marginTop: 20,
-    color: '#222',
-    textAlign: 'center',
-  },
-});

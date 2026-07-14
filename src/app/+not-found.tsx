@@ -1,29 +1,19 @@
 import { ButtonLink } from '@/components/button-link';
-import { backgroundColor } from '@/domains/theme/constants/colors';
+import { Text } from '@/components/ui/text';
 import { Stack } from 'expo-router';
-import { StyleSheet, View, Text } from 'react-native';
+import { View } from 'react-native';
 
 export default function NotFoundScreen() {
   return (
     <>
       <Stack.Screen options={{ title: 'Oops!' }} />
-      <View style={styles.container}>
-        <Text>This screen doesn't exist.</Text>
+      <View className="flex-1 items-center justify-center bg-background p-5">
+        <Text variant="paragraphMd">This screen doesn&apos;t exist.</Text>
 
-        <ButtonLink href="/" style={{ marginTop: 20 }}>
+        <ButtonLink href="/" className="mt-5">
           Go to home screen!
         </ButtonLink>
       </View>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor,
-  },
-});

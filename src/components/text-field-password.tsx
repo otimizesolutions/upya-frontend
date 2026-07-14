@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { TouchableOpacity } from 'react-native';
-import { Entypo } from '@expo/vector-icons';
-import { FieldPath, FieldValues } from 'react-hook-form';
-import { TextFieldProps, TextField } from './text-field';
-import { useTheme } from '@/domains/theme/contexts';
+import { Pressable } from 'react-native';
+import { Eye, EyeOff } from 'lucide-react-native';
+import { type FieldPath, type FieldValues } from 'react-hook-form';
+import { TextField, type TextFieldProps } from './text-field';
 
 export type TextFieldPasswordProps<
   TFieldValues extends FieldValues = FieldValues,
@@ -17,20 +16,21 @@ export const TextFieldPassword = <
   props: TextFieldPasswordProps<TFieldValues, TName>,
 ) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const { inputVariants } = useTheme();
-  const input = inputVariants[props.variant || 'default'];
 
   return (
     <TextField
       secureTextEntry={!isPasswordVisible}
       rightAdorn={
-        <TouchableOpacity onPress={() => setIsPasswordVisible((prev) => !prev)}>
-          <Entypo
-            name={isPasswordVisible ? 'eye-with-line' : 'eye'}
-            size={input.adornIconSize}
-            color={input.color}
-          />
-        </TouchableOpacity>
+        <Pressable
+          onPress={() => setIsPasswordVisible((prev) => !prev)}
+          hitSlop={8}
+        >
+          {isPasswordVisible ? (
+            <EyeOff size={20} color="#172b4d" />
+          ) : (
+            <Eye size={20} color="#172b4d" />
+          )}
+        </Pressable>
       }
       {...props}
     />

@@ -1,25 +1,18 @@
-import { Link as BaseLink, LinkProps as BaseLinkProps } from 'expo-router';
-import { ThemeLinkVariant, useTheme } from '@/domains/theme/contexts';
+import { Link as BaseLink, type LinkProps as BaseLinkProps } from 'expo-router';
+import { cn } from '@/lib/utils';
 
 export type LinkProps = BaseLinkProps & {
-  variant?: ThemeLinkVariant;
+  className?: string;
 };
 
-export const Link = ({ style, variant = 'default', ...props }: LinkProps) => {
-  const { linkVariants } = useTheme();
-  const link = linkVariants[variant];
-
+export const Link = ({ className, style, ...props }: LinkProps) => {
   return (
     <BaseLink
-      style={[
-        {
-          color: link.color,
-          fontFamily: link.fontFamily,
-          fontSize: link.fontSize,
-          fontWeight: link.fontWeight,
-        },
-        style,
-      ]}
+      className={cn(
+        'font-sans-semibold text-label-md text-primary',
+        className,
+      )}
+      style={style}
       {...props}
     />
   );

@@ -1,8 +1,8 @@
 import { useAuth } from '@/domains/auth/contexts';
-import { backgroundColor } from '@/domains/theme/constants/colors';
 import { Stack, useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { View, SafeAreaView, StyleSheet } from 'react-native';
+import { View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
 
 export default function AuthLayout() {
@@ -17,8 +17,8 @@ export default function AuthLayout() {
   }, [router, isAuthenticated]);
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={{ flex: 1 }}>
+    <View className="flex-1 bg-background">
+      <SafeAreaView className="flex-1">
         <Stack>
           <Stack.Screen name="login" options={{ headerShown: false }} />
           <Stack.Screen name="register" options={{ headerShown: false }} />
@@ -28,10 +28,3 @@ export default function AuthLayout() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor,
-  },
-});

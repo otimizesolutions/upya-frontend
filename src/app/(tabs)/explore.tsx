@@ -1,33 +1,25 @@
-import { View, StyleSheet, Text } from 'react-native';
-import { backgroundColor } from '@/domains/theme/constants/colors';
-import { Button } from '@/components/button';
+import { View } from 'react-native';
+import { Button } from '@/components/ui/button';
+import { Text } from '@/components/ui/text';
 import { useLogoutMutation } from '@/domains/auth/mutations';
 
 export default function TabTwoScreen() {
   const logoutMutation = useLogoutMutation();
 
   return (
-    <View style={styles.container}>
-      <Text>Você está na área authenticada.</Text>
-      <Text>Aba Explorar.</Text>
+    <View className="flex-1 items-center justify-center bg-background">
+      <Text variant="headingSm">Você está na área autenticada.</Text>
+      <Text variant="paragraphMd" className="mt-2 text-content-secondary">
+        Aba Explorar.
+      </Text>
 
-      <View style={{ width: 200 }}>
-        <Button
-          style={{ marginTop: 50 }}
-          onPress={() => logoutMutation.mutate()}
-        >
-          {logoutMutation.isPending ? 'Saindo...' : 'Sair'}
-        </Button>
-      </View>
+      <Button
+        className="mt-12 w-52"
+        onPress={() => logoutMutation.mutate()}
+        disabled={logoutMutation.isPending}
+      >
+        {logoutMutation.isPending ? 'Saindo...' : 'Sair'}
+      </Button>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

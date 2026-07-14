@@ -1,22 +1,16 @@
-import { ReactNode, useMemo } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import {
-  Control,
+  type Control,
   Controller,
-  FieldPath,
-  FieldValues,
+  type FieldPath,
+  type FieldValues,
   useFormContext,
 } from 'react-hook-form';
-import { ThemeInputVariant, useTheme } from '@/domains/theme/contexts';
-import {
-  Text,
-  TextInput,
-  View,
-  TextInputProps,
-  StyleSheet,
-  StyleProp,
-  ViewStyle,
-} from 'react-native';
+import { View, type TextInputProps } from 'react-native';
 import { FormMessage } from './form-message';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 export type TextFieldProps<
   TFieldValues extends FieldValues = FieldValues,
@@ -29,8 +23,7 @@ export type TextFieldProps<
   name: TName;
   label: string;
   rightAdorn?: ReactNode;
-  variant?: ThemeInputVariant;
-  containerStyle?: StyleProp<ViewStyle>;
+  containerClassName?: string;
   helperText?: string;
 };
 
@@ -42,68 +35,32 @@ export const TextField = <
   name,
   label,
   style,
+  className,
   rightAdorn,
-  containerStyle,
+  containerClassName,
   helperText,
-  variant = 'default',
   ...props
-}: TextFieldProps<TFieldValues, TName>) => {
-  const { inputVariants } = useTheme();
+}: TextFieldProps<TFieldValues, TName> & { className?: string }) => {
   const { getFieldState, formState } = useFormContext();
-  const input = inputVariants[variant];
 
   const fieldState = useMemo(() => {
     return getFieldState(name, formState);
-  }, [name, formState]);
+  }, [getFieldState, name, formState]);
 
   return (
     <Controller
       control={control}
       name={name}
       render={({ field }) => (
-        <View
-          style={[
-            styles.container,
-            { marginBottom: input.spacing },
-            containerStyle,
-          ]}
-        >
-          <Text
-            style={[
-              styles.label,
-              {
-                color: input.labelColor,
-                fontFamily: input.labelFontFamily,
-                fontSize: input.labelFontSize,
-                marginBottom: input.labelSpacing,
-              },
-            ]}
-          >
-            {label}
-          </Text>
-          <View
-            style={[
-              styles.inputContainer,
-              {
-                borderWidth: input.borderWidth,
-                borderColor: input.borderColor,
-                backgroundColor: input.backgroundColor,
-                borderRadius: input.borderRadius,
-                paddingHorizontal: input.paddingHorizontal,
-                paddingVertical: input.paddingVertical,
-              },
-            ]}
-          >
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  fontFamily: input.fontFamily,
-                  fontSize: input.fontSize,
-                },
-                style,
-              ]}
-              placeholderTextColor={input.placeholderColor}
+        <View className={cn('mb-5 items-stretch', containerClassName)}>
+          <Label>{label}</Label>
+          <View className="flex-row items-center rounded-lg border border-border bg-input px-4">
+            <Input
+              className={cn(
+                'h-12 flex-1 border-0 bg-transparent px-0',
+                className,
+              )}
+              style={style}
               onChangeText={(text) => field.onChange(text)}
               value={field.value}
               ref={field.ref}
@@ -122,19 +79,3 @@ export const TextField = <
     />
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'stretch',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  input: {
-    flex: 1,
-  },
-  label: {
-    marginBottom: 5,
-  },
-});

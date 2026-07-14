@@ -1,12 +1,13 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { TextField } from '@/components/text-field';
 import { TextFieldPassword } from '@/components/text-field-password';
-import { Button } from '@/components/button';
-import { backgroundColor } from '@/domains/theme/constants/colors';
+import { Button } from '@/components/ui/button';
 import { Link } from '@/components/link';
+import { Form } from '@/components/ui/form';
+import { Text } from '@/components/ui/text';
 import { useLoginMutation } from '@/domains/auth/mutations';
 
 const emailMessage = 'Preencha seu e-mail.';
@@ -21,8 +22,10 @@ const formSchema = z.object({
     .min(1, { message: passwordMessage }),
 });
 
+type LoginFormValues = z.infer<typeof formSchema>;
+
 export default function LoginPage() {
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<LoginFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: '',
@@ -31,19 +34,24 @@ export default function LoginPage() {
   });
   const loginMutation = useLoginMutation(form);
 
-  function handleSubmit(values: z.infer<typeof formSchema>) {
+  function handleSubmit(values: LoginFormValues) {
     loginMutation.mutate(values);
   }
 
   return (
-    <View style={styles.container}>
-      <FormProvider {...form}>
+    <View className="flex-1 justify-center bg-background px-8">
+      <Text variant="headingLg" className="mb-8 text-center">
+        Entrar
+      </Text>
+
+      <Form {...form}>
         <TextField
           control={form.control}
           name="email"
           label="E-mail"
           placeholder="Insira seu e-mail"
           keyboardType="email-address"
+          autoCapitalize="none"
         />
 
         <TextFieldPassword
@@ -51,36 +59,20 @@ export default function LoginPage() {
           name="password"
           label="Senha"
           placeholder="Insira sua senha"
-          containerStyle={{ marginBottom: 8 }}
+          containerClassName="mb-2"
         />
 
-        <View style={styles.forgotContainer}>
+        <View className="mb-12 items-end">
           <Link href="/auth/forgot">Esqueci a senha</Link>
         </View>
 
-        <View>
-          <Button
-            onPress={form.handleSubmit(handleSubmit)}
-            disabled={loginMutation.isPending}
-          >
-            {loginMutation.isPending ? 'Entrando...' : 'Entrar'}
-          </Button>
-        </View>
-      </FormProvider>
+        <Button
+          onPress={form.handleSubmit(handleSubmit)}
+          disabled={loginMutation.isPending}
+        >
+          {loginMutation.isPending ? 'Entrando...' : 'Entrar'}
+        </Button>
+      </Form>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor,
-    paddingHorizontal: 30,
-    alignItems: 'stretch',
-    justifyContent: 'center',
-  },
-  forgotContainer: {
-    alignItems: 'flex-end',
-    marginBottom: 50,
-  },
-});

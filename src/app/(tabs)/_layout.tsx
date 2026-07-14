@@ -1,11 +1,12 @@
 import { Tabs, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
-import { Platform, SafeAreaView, StyleSheet, View } from 'react-native';
+import { Platform, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { House, Send } from 'lucide-react-native';
 
 import { useAuth } from '@/domains/auth/contexts';
-import { backgroundColor, primary } from '@/domains/theme/constants/colors';
+import { primary } from '@/domains/theme/constants/colors';
 import { StatusBar } from 'expo-status-bar';
-import { MaterialIcons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   const { isAuthenticated } = useAuth();
@@ -19,8 +20,8 @@ export default function TabLayout() {
   }, [router, isAuthenticated]);
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.innerContainer}>
+    <View className="flex-1 bg-background">
+      <SafeAreaView className="flex-1">
         <StatusBar style="dark" />
         <Tabs
           screenOptions={{
@@ -28,7 +29,6 @@ export default function TabLayout() {
             headerShown: false,
             tabBarStyle: Platform.select({
               ios: {
-                // Use a transparent background on iOS to show the blur effect
                 position: 'absolute',
               },
               default: {},
@@ -39,18 +39,14 @@ export default function TabLayout() {
             name="index"
             options={{
               title: 'Home',
-              tabBarIcon: ({ color }) => (
-                <MaterialIcons name="house" size={28} color={color} />
-              ),
+              tabBarIcon: ({ color }) => <House size={28} color={color} />,
             }}
           />
           <Tabs.Screen
             name="explore"
             options={{
               title: 'Explore',
-              tabBarIcon: ({ color }) => (
-                <MaterialIcons name="send" size={28} color={color} />
-              ),
+              tabBarIcon: ({ color }) => <Send size={28} color={color} />,
             }}
           />
         </Tabs>
@@ -58,13 +54,3 @@ export default function TabLayout() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor,
-  },
-  innerContainer: {
-    flex: 1,
-  },
-});
