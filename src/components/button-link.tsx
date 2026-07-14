@@ -1,41 +1,36 @@
 import type { PropsWithChildren } from 'react';
 import { Link, type LinkProps } from 'expo-router';
-import { cn } from '@/lib/utils';
-import { Text } from '@/components/ui/text';
+import { Button, type ButtonProps } from '@/components/ui/button';
 
 export type ButtonLinkProps = PropsWithChildren<
-  Omit<LinkProps, 'children'> & {
-    className?: string;
-    textClassName?: string;
-  }
+  Omit<LinkProps, 'children' | 'asChild'> &
+    Pick<
+      ButtonProps,
+      'variant' | 'size' | 'className' | 'textClassName' | 'disabled'
+    >
 >;
 
+/** Link estilizado com o Button shadcn (variantes do Figma). */
 export const ButtonLink = ({
   children,
-  style,
+  variant = 'default',
+  size = 'default',
   className,
   textClassName,
+  disabled,
   ...props
 }: ButtonLinkProps) => {
   return (
-    <Link
-      className={cn(
-        'items-center justify-center rounded-full border border-primary bg-primary px-2.5 py-4',
-        className,
-      )}
-      style={style}
-      {...props}
-    >
-      {typeof children === 'string' ? (
-        <Text
-          variant="labelMd"
-          className={cn('text-center text-primary-foreground', textClassName)}
-        >
-          {children}
-        </Text>
-      ) : (
-        children
-      )}
+    <Link {...props} asChild>
+      <Button
+        variant={variant}
+        size={size}
+        className={className}
+        textClassName={textClassName}
+        disabled={disabled}
+      >
+        {children}
+      </Button>
     </Link>
   );
 };

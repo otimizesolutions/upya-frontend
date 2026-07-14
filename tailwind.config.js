@@ -41,6 +41,11 @@ module.exports = {
           900: '#034118',
           1000: '#002b00',
         },
+        neon: {
+          DEFAULT: '#e8ff00',
+          100: '#fdfff2',
+          600: '#e8ff00',
+        },
         content: {
           primary: '#172b4d',
           secondary: '#626f86',

@@ -7,6 +7,11 @@ export const paperForegroundMuted = '#626f86';
 export const destructive = '#cf3e4c';
 export const contentPrimary = '#172b4d';
 export const contentSecondary = '#626f86';
+export const neon = {
+  DEFAULT: '#e8ff00',
+  100: '#fdfff2',
+  600: '#e8ff00',
+} as const;
 
 export const gray = {
   100: '#ffffff',

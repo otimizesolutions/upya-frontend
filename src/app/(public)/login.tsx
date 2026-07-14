@@ -7,6 +7,7 @@ import { TextFieldPassword } from '@/components/text-field-password';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/components/link';
 import { Form } from '@/components/ui/form';
+import { Screen } from '@/components/screen';
 import { Text } from '@/components/ui/text';
 import { useLoginMutation } from '@/domains/auth/mutations';
 
@@ -39,7 +40,7 @@ export default function LoginPage() {
   }
 
   return (
-    <View className="flex-1 justify-center bg-background px-8">
+    <Screen scroll contentClassName="justify-center px-8 py-6">
       <Text variant="headingLg" className="mb-8 text-center">
         Entrar
       </Text>
@@ -63,16 +64,17 @@ export default function LoginPage() {
         />
 
         <View className="mb-12 items-end">
-          <Link href="/auth/forgot">Esqueci a senha</Link>
+          <Link href="/forgot">Esqueci a senha</Link>
         </View>
 
         <Button
           onPress={form.handleSubmit(handleSubmit)}
           disabled={loginMutation.isPending}
+          className="w-full"
         >
           {loginMutation.isPending ? 'Entrando...' : 'Entrar'}
         </Button>
       </Form>
-    </View>
+    </Screen>
   );
 }

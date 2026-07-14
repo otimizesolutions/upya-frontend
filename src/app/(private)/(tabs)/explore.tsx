@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { useLogoutMutation } from '@/domains/auth/mutations';
 
-export default function TabTwoScreen() {
+export default function ExploreScreen() {
   const logoutMutation = useLogoutMutation();
 
   return (
@@ -14,7 +14,7 @@ export default function TabTwoScreen() {
       </Text>
 
       <Button
-        className="mt-12 w-52"
+        className="mt-12 w-full max-w-xs"
         onPress={() => logoutMutation.mutate()}
         disabled={logoutMutation.isPending}
       >

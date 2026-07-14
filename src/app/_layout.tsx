@@ -1,6 +1,6 @@
 import '../../global.css';
 
-import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from 'expo-router/react-navigation';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   useFonts,
@@ -12,17 +12,40 @@ import {
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { Suspense, useEffect } from 'react';
+import { Suspense } from 'react';
 import { Toasts } from '@backpackapp-io/react-native-toast';
 import 'react-native-reanimated';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/domains/auth/contexts';
-import { Text } from '@/components/ui/text';
+import { useAuth } from '@/domains/auth/contexts';
+import { AppSplashScreen } from '@/components/splash-screen';
 
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
+
+function RootNavigator() {
+  const { isAuthenticated, hasHydrated } = useAuth();
+
+  if (!hasHydrated) {
+    return <AppSplashScreen />;
+  }
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Protected guard={!isAuthenticated}>
+        <Stack.Screen name="(public)" />
+      </Stack.Protected>
+
+      <Stack.Protected guard={isAuthenticated}>
+        <Stack.Screen name="(private)" />
+      </Stack.Protected>
+
+      <Stack.Screen name="+not-found" />
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -44,37 +67,23 @@ export default function RootLayout() {
     'Panchang-Bold': require('../assets/fonts/Panchang-Bold.ttf'),
   });
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
   if (!loaded) {
     return null;
   }
 
   return (
-    <Suspense
-      fallback={
-        <>
-          <Text>Absolute Loading...</Text>
-        </>
-      }
-    >
-      <GestureHandlerRootView className="flex-1">
+    <Suspense fallback={<AppSplashScreen />}>
+      <GestureHandlerRootView
+        className="flex-1"
+        onLayout={() => {
+          SplashScreen.hideAsync();
+        }}
+      >
         <Toasts />
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <ThemeProvider value={DefaultTheme}>
-              <Stack
-                initialRouteName="index"
-                screenOptions={{ headerShown: false }}
-              >
-                <Stack.Screen name="index" options={{ headerShown: false }} />
-                <Stack.Screen name="auth" options={{ headerShown: false }} />
-                <Stack.Screen name="+not-found" />
-              </Stack>
+              <RootNavigator />
               <StatusBar style="auto" />
             </ThemeProvider>
           </AuthProvider>

@@ -1,20 +1,22 @@
 {
   "expo": {
-    "name": "expo-template",
-    "slug": "expo-template",
+    "name": "Upya",
+    "slug": "Upya",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.guilherme78421.expotemplate"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "backgroundColor": "#000000"
+      },
+      "package": "com.guilherme78421.expotemplate"
     },
     "web": {
       "bundler": "metro",
@@ -29,7 +31,13 @@
           "image": "./src/assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#000000",
+          "enableFullScreenImage_legacy": true,
+          "ios": {
+            "image": "./src/assets/images/splash.png",
+            "resizeMode": "cover",
+            "backgroundColor": "#000000"
+          }
         }
       ]
     ],

@@ -10,6 +10,7 @@ export const useAuth = () => {
     ...context,
     accessToken: store.accessToken,
     refreshToken: store.refreshToken,
+    hasHydrated: store.hasHydrated,
     setTokens: store.setTokens,
     setAccessToken: store.setAccessToken,
     setUser: store.setUser,

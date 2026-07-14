@@ -10,6 +10,8 @@ export interface AuthState {
   refreshToken: string | null;
   user: User | null;
   isAuthenticated: boolean;
+  hasHydrated: boolean;
+  setHasHydrated: (value: boolean) => void;
   setTokens: (access: string, refresh: string) => Promise<void>;
   setAccessToken: (access: string) => void;
   setUser: (user: User | null) => void;
@@ -23,6 +25,8 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       user: null,
       isAuthenticated: false,
+      hasHydrated: false,
+      setHasHydrated: (value) => set({ hasHydrated: value }),
       setTokens: async (access, refresh) => {
         await AsyncStorage.setItem(TOKEN_KEY, refresh);
         api.defaults.headers.common.Authorization = `Bearer ${access}`;
@@ -37,7 +41,7 @@ export const useAuthStore = create<AuthState>()(
         set({ accessToken: access, isAuthenticated: true });
       },
       setUser: (user) => {
-        set({ user, isAuthenticated: !!user });
+        set({ user });
       },
       clearAuth: async () => {
         await AsyncStorage.removeItem(TOKEN_KEY);
@@ -58,10 +62,11 @@ export const useAuthStore = create<AuthState>()(
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
-      onRehydrateStorage: () => (state) => {
-        if (state?.accessToken) {
+      onRehydrateStorage: () => (state, error) => {
+        if (!error && state?.accessToken) {
           api.defaults.headers.common.Authorization = `Bearer ${state.accessToken}`;
         }
+        useAuthStore.getState().setHasHydrated(true);
       },
     },
   ),
