@@ -50,7 +50,7 @@ module.exports = {
           primary: '#172b4d',
           secondary: '#626f86',
         },
-        background: '#f6f6f6',
+        background: '#000000',
         foreground: '#172b4d',
         card: {
           DEFAULT: '#ffffff',

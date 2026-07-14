@@ -6,7 +6,8 @@
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
     "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#000000",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.guilherme78421.expotemplate"

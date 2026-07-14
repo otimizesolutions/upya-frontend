@@ -1,4 +1,4 @@
-export const backgroundColor = '#f6f6f6';
+export const backgroundColor = '#000000';
 export const primary = '#ed5562';
 export const primaryForeground = '#ffffff';
 export const paper = '#e3e3e3';

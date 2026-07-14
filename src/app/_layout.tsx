@@ -1,6 +1,6 @@
 import '../../global.css';
 
-import { DefaultTheme, ThemeProvider } from 'expo-router/react-navigation';
+import { ThemeProvider, type Theme } from 'expo-router/react-navigation';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   useFonts,
@@ -17,13 +17,43 @@ import { Toasts } from '@backpackapp-io/react-native-toast';
 import 'react-native-reanimated';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from '@/domains/auth/contexts';
-import { useAuth } from '@/domains/auth/contexts';
+import { AuthProvider, useAuth } from '@/domains/auth/contexts';
 import { AppSplashScreen } from '@/components/splash-screen';
+import { backgroundColor } from '@/domains/theme/constants/colors';
 
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
+
+const AppTheme: Theme = {
+  dark: true,
+  colors: {
+    primary: '#e8ff00',
+    background: backgroundColor,
+    card: backgroundColor,
+    text: '#ffffff',
+    border: '#1e1e1e',
+    notification: '#e8ff00',
+  },
+  fonts: {
+    regular: {
+      fontFamily: 'System',
+      fontWeight: '400',
+    },
+    medium: {
+      fontFamily: 'System',
+      fontWeight: '500',
+    },
+    bold: {
+      fontFamily: 'System',
+      fontWeight: '700',
+    },
+    heavy: {
+      fontFamily: 'System',
+      fontWeight: '800',
+    },
+  },
+};
 
 function RootNavigator() {
   const { isAuthenticated, hasHydrated } = useAuth();
@@ -33,7 +63,12 @@ function RootNavigator() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor },
+      }}
+    >
       <Stack.Protected guard={!isAuthenticated}>
         <Stack.Screen name="(public)" />
       </Stack.Protected>
@@ -74,7 +109,8 @@ export default function RootLayout() {
   return (
     <Suspense fallback={<AppSplashScreen />}>
       <GestureHandlerRootView
-        className="flex-1"
+        className="flex-1 bg-background"
+        style={{ backgroundColor }}
         onLayout={() => {
           SplashScreen.hideAsync();
         }}
@@ -82,9 +118,9 @@ export default function RootLayout() {
         <Toasts />
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <ThemeProvider value={DefaultTheme}>
+            <ThemeProvider value={AppTheme}>
               <RootNavigator />
-              <StatusBar style="auto" />
+              <StatusBar style="light" />
             </ThemeProvider>
           </AuthProvider>
         </QueryClientProvider>
