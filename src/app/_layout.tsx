@@ -12,7 +12,6 @@ import {
   Inter_600SemiBold,
 } from '@expo-google-fonts/inter';
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { Toasts } from '@backpackapp-io/react-native-toast';
 import 'react-native-reanimated';
@@ -21,8 +20,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from '@/domains/auth/contexts';
 import { useAuthStore } from '@/domains/auth/stores';
 import { backgroundColor } from '@/domains/theme/constants/colors';
-
-SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
@@ -88,7 +85,7 @@ export default function RootLayout() {
   /* eslint-enable camelcase */
   const fontsReady = fontsLoaded || !!fontError;
 
-  // Fallback: não prender a splash se a hidratação do AsyncStorage atrasar.
+  // Fallback: não prender a UI se a hidratação do AsyncStorage atrasar.
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (!useAuthStore.getState().hasHydrated) {
@@ -98,13 +95,6 @@ export default function RootLayout() {
 
     return () => clearTimeout(timeout);
   }, [setHasHydrated]);
-
-  // Uma única splash nativa até fonts + auth estarem prontos.
-  useEffect(() => {
-    if (fontsReady && hasHydrated) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsReady, hasHydrated]);
 
   if (!fontsReady || !hasHydrated) {
     return null;
