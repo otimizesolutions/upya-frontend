@@ -44,6 +44,7 @@ module.exports = {
         neon: {
           DEFAULT: '#e8ff00',
           100: '#fdfff2',
+          200: '#f9ffe0',
           600: '#e8ff00',
         },
         content: {

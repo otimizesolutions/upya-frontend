@@ -66,7 +66,7 @@ export default function WelcomePage() {
       <View
         className={cn('w-full gap-3 pb-2', isCompact ? 'mt-6' : 'mt-[76px]')}
       >
-        <ButtonLink href="/register">Sou cliente</ButtonLink>
+        <ButtonLink href="/onboarding/client">Sou cliente</ButtonLink>
         <ButtonLink href="/onboarding/professional" variant="secondary">
           Sou profissional
         </ButtonLink>
