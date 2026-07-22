@@ -344,6 +344,11 @@ export default function LoginPage() {
               <Pressable
                 accessibilityRole="button"
                 className="h-[52px] w-full items-center justify-center bg-gray-1000"
+                onPress={() => {
+                  if (role === 'client') {
+                    router.push('/register/client/email');
+                  }
+                }}
               >
                 <Text className="font-display-semibold text-[20px] leading-[1.4] text-gray-100">
                   Cadastre-se
