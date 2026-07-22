@@ -5,14 +5,13 @@
 
 import * as z from 'zod'
 
-export const userSchema = z.object({
+export const userProfessionalCreateSchema = z.object({
   id: z.int(),
-  last_login: z.iso.datetime().nullish(),
   name: z.string().max(160),
   email: z.email().max(254).optional(),
+  confirm_email: z.email(),
   phone: z.string().max(15).regex(/^\(?(1[1-9]|2[12478]|3[1-578]|4[1-9]|5[1345]|6[1-9]|7[134579]|8[1-9]|9[1-9])\)?\s?9\d{4}-?\d{4}$/),
   cpf: z.string().max(11),
-  photo: z.url().nullish(),
-  date_joined: z.iso.datetime().optional(),
-  is_phone_confirmed: z.boolean().optional(),
+  password: z.string().max(128),
+  confirm_password: z.string(),
 })

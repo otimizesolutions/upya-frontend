@@ -3,14 +3,8 @@
 * Do not edit manually.
 */
 
-export type User = {
+export type UserProfessionalCreate = {
     readonly id: number;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string | undefined
-    */
-    last_login?: string | null;
     /**
      * @maxLength 160
      * @type string
@@ -24,6 +18,12 @@ export type User = {
     */
     email?: string;
     /**
+     * @description
+     * Format: `email`
+     * @type string
+    */
+    confirm_email: string;
+    /**
      * @maxLength 15
      * @pattern ^\(?(1[1-9]|2[12478]|3[1-578]|4[1-9]|5[1345]|6[1-9]|7[134579]|8[1-9]|9[1-9])\)?\s?9\d{4}-?\d{4}$
      * @type string
@@ -35,16 +35,9 @@ export type User = {
     */
     cpf: string;
     /**
-     * @description
-     * Format: `uri`
-     * @type string | undefined
+     * @maxLength 128
+     * @type string
     */
-    photo?: string | null;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string | undefined
-    */
-    date_joined?: string;
-    is_phone_confirmed?: boolean;
+    password: string;
+    confirm_password: string;
 };
