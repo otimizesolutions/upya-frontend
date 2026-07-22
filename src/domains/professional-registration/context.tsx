@@ -4,7 +4,7 @@ import { FormProvider, useForm, useFormContext } from 'react-hook-form';
 import { z } from 'zod';
 import { isValidCpf, onlyDigits } from '@/domains/registration/validation';
 
-export const clientRegistrationSchema = z
+export const professionalRegistrationSchema = z
   .object({
     email: z
       .string()
@@ -36,6 +36,10 @@ export const clientRegistrationSchema = z
       .string()
       .min(1, 'Informe seu CPF.')
       .refine(isValidCpf, 'Digite um CPF válido.'),
+    crefito: z
+      .string()
+      .min(1, 'CREFITO incorreto.')
+      .refine((value) => onlyDigits(value).length >= 6, 'CREFITO incorreto.'),
     password: z
       .string()
       .min(8, 'A senha deve ter pelo menos 8 caracteres.')
@@ -51,12 +55,15 @@ export const clientRegistrationSchema = z
     path: ['confirmPassword'],
   });
 
-export type ClientRegistrationData = z.infer<typeof clientRegistrationSchema>;
+export type ProfessionalRegistrationData = z.infer<
+  typeof professionalRegistrationSchema
+>;
 
-const initialData: ClientRegistrationData = {
+const initialData: ProfessionalRegistrationData = {
   confirmEmail: '',
   confirmPassword: '',
   cpf: '',
+  crefito: '',
   email: '',
   fullName: '',
   otp: '',
@@ -64,9 +71,11 @@ const initialData: ClientRegistrationData = {
   phone: '',
 };
 
-export function ClientRegistrationProvider({ children }: PropsWithChildren) {
-  const form = useForm<ClientRegistrationData>({
-    resolver: zodResolver(clientRegistrationSchema),
+export function ProfessionalRegistrationProvider({
+  children,
+}: PropsWithChildren) {
+  const form = useForm<ProfessionalRegistrationData>({
+    resolver: zodResolver(professionalRegistrationSchema),
     defaultValues: initialData,
     mode: 'onChange',
   });
@@ -74,6 +83,6 @@ export function ClientRegistrationProvider({ children }: PropsWithChildren) {
   return <FormProvider {...form}>{children}</FormProvider>;
 }
 
-export function useClientRegistrationForm() {
-  return useFormContext<ClientRegistrationData>();
+export function useProfessionalRegistrationForm() {
+  return useFormContext<ProfessionalRegistrationData>();
 }

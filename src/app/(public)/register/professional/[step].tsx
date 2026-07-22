@@ -19,15 +19,15 @@ import { ClientRegistrationOtp } from '@/components/client-registration-otp';
 import { ClientRegistrationShell } from '@/components/client-registration-shell';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/ui/text';
-import { useClientRegistrationForm } from '@/domains/client-registration/context';
+import { useProfessionalRegistrationForm } from '@/domains/professional-registration/context';
 
 type RegistrationStep =
-  'email' | 'phone' | 'otp' | 'personal' | 'password' | 'success';
+  'email' | 'phone' | 'otp' | 'personal' | 'crefito' | 'password' | 'success';
 
 const iconProps = { color: '#868b91', size: 20, strokeWidth: 1.75 };
 
 function routeFor(step: RegistrationStep): Href {
-  return `/register/client/${step}` as Href;
+  return `/register/professional/${step}` as Href;
 }
 
 function onlyDigits(value: string) {
@@ -45,8 +45,8 @@ function formatPhone(value: string) {
 }
 
 function formatCpf(value: string) {
-  const digits = onlyDigits(value).slice(0, 11);
-  return digits
+  return onlyDigits(value)
+    .slice(0, 11)
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
@@ -54,8 +54,9 @@ function formatCpf(value: string) {
 
 function EmailStep() {
   const router = useRouter();
-  const form = useClientRegistrationForm();
-  const data = form.watch();
+  const form = useProfessionalRegistrationForm();
+  const email = form.watch('email');
+  const confirmEmail = form.watch('confirmEmail');
   const errors = form.formState.errors;
   const isMismatch =
     errors.confirmEmail?.message === 'Os e-mails não coincidem.';
@@ -65,7 +66,8 @@ function EmailStep() {
   return (
     <ClientRegistrationShell
       activeStep={1}
-      disabled={!data.email || !data.confirmEmail}
+      totalSteps={6}
+      disabled={!email || !confirmEmail}
       onContinue={async () => {
         if (await form.trigger(['email', 'confirmEmail'])) {
           router.push(routeFor('phone'));
@@ -81,7 +83,7 @@ function EmailStep() {
           forceError={hasGroupError || !!errors.email}
           icon={<Mail {...iconProps} />}
           keyboardType="email-address"
-          label="Insira seu e-mail"
+          label="Insira seu E-mail"
           name="email"
           returnKeyType="next"
           showErrorMessage={false}
@@ -95,7 +97,7 @@ function EmailStep() {
           forceError={hasGroupError || !!errors.confirmEmail}
           icon={<Mail {...iconProps} />}
           keyboardType="email-address"
-          label="Confirme o e-mail"
+          label="Confirme o E-mail"
           name="confirmEmail"
           returnKeyType="done"
           showErrorMessage={false}
@@ -115,18 +117,16 @@ function EmailStep() {
 
 function PhoneStep() {
   const router = useRouter();
-  const form = useClientRegistrationForm();
-  const phone = form.watch('phone');
-  const hasPhone = onlyDigits(phone).length > 0;
+  const form = useProfessionalRegistrationForm();
+  const hasPhone = onlyDigits(form.watch('phone')).length > 0;
 
   return (
     <ClientRegistrationShell
       activeStep={2}
+      totalSteps={6}
       disabled={!hasPhone}
       onContinue={async () => {
-        if (await form.trigger('phone')) {
-          router.push(routeFor('otp'));
-        }
+        if (await form.trigger('phone')) router.push(routeFor('otp'));
       }}
     >
       <View className="w-full gap-6">
@@ -153,7 +153,7 @@ function PhoneStep() {
 
 function OtpStep() {
   const router = useRouter();
-  const form = useClientRegistrationForm();
+  const form = useProfessionalRegistrationForm();
   const phone = form.watch('phone');
   const otp = form.watch('otp');
   const otpError = form.formState.errors.otp?.message;
@@ -177,6 +177,7 @@ function OtpStep() {
   return (
     <ClientRegistrationShell
       activeStep={3}
+      totalSteps={6}
       disabled={submitted && otp.length !== 4}
       onContinue={async () => {
         setSubmitted(true);
@@ -187,9 +188,7 @@ function OtpStep() {
           });
           return;
         }
-        if (await form.trigger('otp')) {
-          router.push(routeFor('personal'));
-        }
+        if (await form.trigger('otp')) router.push(routeFor('personal'));
       }}
     >
       <View className="w-full items-center gap-8">
@@ -246,18 +245,20 @@ function OtpStep() {
 
 function PersonalStep() {
   const router = useRouter();
-  const form = useClientRegistrationForm();
-  const data = form.watch();
+  const form = useProfessionalRegistrationForm();
+  const fullName = form.watch('fullName');
+  const cpf = form.watch('cpf');
   const errors = form.formState.errors;
   const errorMessage = errors.fullName?.message ?? errors.cpf?.message;
 
   return (
     <ClientRegistrationShell
       activeStep={4}
-      disabled={!data.fullName.trim() || !onlyDigits(data.cpf)}
+      totalSteps={6}
+      disabled={!fullName.trim() || !onlyDigits(cpf)}
       onContinue={async () => {
         if (await form.trigger(['fullName', 'cpf'])) {
-          router.push(routeFor('password'));
+          router.push(routeFor('crefito'));
         }
       }}
     >
@@ -295,6 +296,39 @@ function PersonalStep() {
   );
 }
 
+function CrefitoStep() {
+  const router = useRouter();
+  const form = useProfessionalRegistrationForm();
+  const hasCrefito = onlyDigits(form.watch('crefito')).length > 0;
+
+  return (
+    <ClientRegistrationShell
+      activeStep={5}
+      totalSteps={6}
+      disabled={!hasCrefito}
+      onContinue={async () => {
+        if (await form.trigger('crefito')) router.push(routeFor('password'));
+      }}
+    >
+      <View className="w-full gap-6">
+        <ClientRegistrationField
+          autoFocus
+          control={form.control}
+          keyboardType="number-pad"
+          label="Insira o nº do CREFITO"
+          name="crefito"
+          returnKeyType="done"
+          showErrorMessage={false}
+          transform={(value) => onlyDigits(value).slice(0, 12)}
+        />
+        <RegistrationErrorMessage
+          message={form.formState.errors.crefito?.message}
+        />
+      </View>
+    </ClientRegistrationShell>
+  );
+}
+
 function PasswordRequirement({
   checked,
   children,
@@ -322,14 +356,15 @@ function PasswordRequirement({
 
 function PasswordStep() {
   const router = useRouter();
-  const form = useClientRegistrationForm();
-  const data = form.watch();
+  const form = useProfessionalRegistrationForm();
+  const password = form.watch('password');
+  const confirmPassword = form.watch('confirmPassword');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
-  const hasLength = data.password.length >= 8;
-  const hasSpecial = /[^A-Za-z0-9]/.test(data.password);
+  const hasLength = password.length >= 8;
+  const hasSpecial = /[^A-Za-z0-9]/.test(password);
   const passwordsMatch =
-    data.confirmPassword.length > 0 && data.password === data.confirmPassword;
+    confirmPassword.length > 0 && password === confirmPassword;
 
   return (
     <ClientRegistrationShell
@@ -348,8 +383,8 @@ function PasswordStep() {
         </Text>
         <View className="w-full gap-4">
           <ClientRegistrationField
-            autoFocus
             autoComplete="new-password"
+            autoFocus
             control={form.control}
             icon={<LockKeyhole {...iconProps} />}
             label="Senha"
@@ -386,12 +421,12 @@ function PasswordStep() {
 
 function SuccessStep() {
   const router = useRouter();
-  const form = useClientRegistrationForm();
+  const form = useProfessionalRegistrationForm();
 
   useEffect(() => {
     const timer = setTimeout(() => {
       form.reset();
-      router.replace({ pathname: '/login', params: { role: 'client' } });
+      router.replace({ pathname: '/login', params: { role: 'professional' } });
     }, 1800);
     return () => clearTimeout(timer);
   }, [form, router]);
@@ -414,7 +449,7 @@ function SuccessStep() {
   );
 }
 
-export default function ClientRegistrationStepPage() {
+export default function ProfessionalRegistrationStepPage() {
   const params = useLocalSearchParams<{ step?: string }>();
   const step = params.step as RegistrationStep;
 
@@ -425,6 +460,8 @@ export default function ClientRegistrationStepPage() {
       return <OtpStep />;
     case 'personal':
       return <PersonalStep />;
+    case 'crefito':
+      return <CrefitoStep />;
     case 'password':
       return <PasswordStep />;
     case 'success':

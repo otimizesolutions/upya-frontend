@@ -13,7 +13,8 @@ export default function PublicLayout() {
       <Stack.Screen name="onboarding" />
       <Stack.Screen name="login" />
       <Stack.Screen name="forgot" />
-      <Stack.Screen name="register" />
+      <Stack.Screen name="register/client" />
+      <Stack.Screen name="register/professional" />
     </Stack>
   );
 }

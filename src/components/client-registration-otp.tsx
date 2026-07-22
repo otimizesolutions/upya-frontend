@@ -3,11 +3,15 @@ import { Pressable, TextInput, useWindowDimensions, View } from 'react-native';
 import { Text } from '@/components/ui/text';
 
 type ClientRegistrationOtpProps = {
+  error?: boolean;
+  onBlur?: () => void;
   onChange: (value: string) => void;
   value: string;
 };
 
 export function ClientRegistrationOtp({
+  error,
+  onBlur,
   onChange,
   value,
 }: ClientRegistrationOtpProps) {
@@ -32,9 +36,11 @@ export function ClientRegistrationOtp({
             <View
               key={index}
               className={
-                isActive
-                  ? 'items-center justify-center rounded-full border border-neon bg-gray-900'
-                  : 'items-center justify-center rounded-full border border-gray-800 bg-gray-900'
+                error
+                  ? 'items-center justify-center rounded-full border border-red-500 bg-gray-900'
+                  : isActive
+                    ? 'items-center justify-center rounded-full border border-neon bg-gray-900'
+                    : 'items-center justify-center rounded-full border border-gray-800 bg-gray-900'
               }
               style={{ width: digitSize, height: digitSize }}
             >
@@ -57,8 +63,13 @@ export function ClientRegistrationOtp({
         keyboardType="number-pad"
         maxLength={4}
         value={value}
-        onBlur={() => setFocused(false)}
-        onChangeText={(text) => onChange(text.replace(/\D/g, '').slice(0, 4))}
+        onBlur={() => {
+          setFocused(false);
+          onBlur?.();
+        }}
+        onChangeText={(text) => {
+          onChange(text.replace(/\D/g, '').slice(0, 4));
+        }}
         onFocus={() => setFocused(true)}
         style={{ position: 'absolute', width: 1, height: 1, opacity: 0 }}
       />

@@ -347,6 +347,8 @@ export default function LoginPage() {
                 onPress={() => {
                   if (role === 'client') {
                     router.push('/register/client/email');
+                  } else {
+                    router.push('/register/professional/email');
                   }
                 }}
               >
