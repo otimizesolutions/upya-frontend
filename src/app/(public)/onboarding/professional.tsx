@@ -1,8 +1,10 @@
 import { Image, useWindowDimensions, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import logo from '@/assets/images/upya-logo.png';
+import avatarAndre from '@/assets/images/onboarding/avatar-andre.jpg';
 import avatarJonathas from '@/assets/images/onboarding/avatar-jonathas.jpg';
 import avatarPriscilla from '@/assets/images/onboarding/avatar-priscilla.jpg';
 import { ButtonBack } from '@/components/button-back';
@@ -13,12 +15,12 @@ import { cn } from '@/lib/utils';
 
 /** Frame Figma 390×844 — Onboard profissional (11122:15). */
 const FIGMA_WIDTH = 390;
-const FIGMA_HEIGHT = 844;
-const LOGO_WIDTH = 171;
-const LOGO_HEIGHT = 34;
+const FIGMA_CONTENT_HEIGHT = 770;
+const LOGO_WIDTH = 126;
+const LOGO_HEIGHT = 25.05;
 /** Agenda (11140:102). */
 const SCHEDULE_W = 355.55;
-const SCHEDULE_H = 268;
+const SCHEDULE_FIGMA_SCALE = 290 / SCHEDULE_W;
 const CONTENT_MAX_WIDTH = 430;
 
 const DAYS = [
@@ -41,9 +43,15 @@ const APPOINTMENTS = [
     time: '09:00 - 10:00',
     avatar: avatarPriscilla,
   },
+  {
+    name: 'André Alencar',
+    specialty: 'Alivio de dores',
+    time: '09:00 - 10:00',
+    avatar: avatarAndre,
+  },
 ] as const;
 
-const TIME_LABELS = ['08:00', '09:00', '10:00', '10:00'] as const;
+const TIME_LABELS = ['08:00', '09:00', '10:00', '10:00', '11:00'] as const;
 
 /** Escala uniforme das medidas do Figma — texto nativo (sem bitmap). */
 function SchedulePreview({ s }: { s: number }) {
@@ -117,12 +125,12 @@ function SchedulePreview({ s }: { s: number }) {
       </View>
 
       {/* Timeline + cards — Figma 11140:101 */}
-      <View className="w-full flex-row items-end justify-between">
+      <View className="w-full flex-row items-start justify-between">
         <View
           className="shrink-0 justify-center"
-          style={{ height: 178 * s, paddingRight: 8 * s }}
+          style={{ height: 229.7 * s, paddingRight: 8 * s }}
         >
-          <View style={{ gap: 36 * s }}>
+          <View className="h-full justify-between">
             {TIME_LABELS.map((label, index) => (
               <Text
                 key={`${label}-${index}`}
@@ -137,7 +145,7 @@ function SchedulePreview({ s }: { s: number }) {
           </View>
         </View>
 
-        <View className="min-w-0 flex-1" style={{ gap: 52 * s }}>
+        <View className="min-w-0 flex-1" style={{ gap: 24 * s }}>
           {APPOINTMENTS.map((appointment) => (
             <View
               key={appointment.name}
@@ -243,49 +251,30 @@ export default function ProfessionalOnboardingPage() {
   const insets = useSafeAreaInsets();
   const usableHeight = height - insets.top - insets.bottom;
 
-  const scale = Math.min(width / FIGMA_WIDTH, usableHeight / FIGMA_HEIGHT, 1);
-  const isCompact = usableHeight < 700;
-  const isVeryCompact = usableHeight < 600;
+  const scale = Math.min(width / FIGMA_WIDTH, 1);
+  const isCompact = usableHeight < FIGMA_CONTENT_HEIGHT || width > height;
 
   const logoWidth = LOGO_WIDTH * scale;
   const logoHeight = LOGO_HEIGHT * scale;
-
-  const footerReserve = isVeryCompact ? 210 : isCompact ? 240 : 268;
-  const scheduleMaxH = Math.max(
-    usableHeight - logoHeight - footerReserve,
-    usableHeight * 0.3,
-  );
-  const scheduleMaxW = Math.min(
-    SCHEDULE_W * scale,
-    width - 32,
-    CONTENT_MAX_WIDTH,
-  );
-  const scheduleScale = Math.min(
-    scheduleMaxW / SCHEDULE_W,
-    scheduleMaxH / SCHEDULE_H,
-    1,
-  );
-
-  const titleSize = Math.round(24 * Math.max(scale, 0.88));
-  const bodySize = Math.round(16 * Math.max(scale, 0.88));
+  const scheduleScale = SCHEDULE_FIGMA_SCALE * scale;
+  const illustrationWidth = 304 * scale;
+  const illustrationHeight = 284 * scale;
+  const titleSize = Math.round(32 * Math.max(scale, 0.88));
+  const bodySize = Math.round(16 * Math.max(scale, 0.9));
+  const compactMinHeight = FIGMA_CONTENT_HEIGHT * Math.max(scale, 0.9);
 
   return (
     <Screen className="bg-gray-1000" contentClassName="px-4" scroll={isCompact}>
       <StatusBar style="light" />
 
       <View
-        className={cn(
-          'w-full flex-1 self-center',
-          isCompact ? 'min-h-full justify-between' : 'justify-between',
-        )}
-        style={{ maxWidth: CONTENT_MAX_WIDTH }}
+        className="w-full flex-1 self-center"
+        style={{
+          maxWidth: CONTENT_MAX_WIDTH,
+          minHeight: isCompact ? compactMinHeight : undefined,
+        }}
       >
-        <View
-          className={cn(
-            'shrink-0 items-center',
-            isVeryCompact ? 'pt-1' : isCompact ? 'pt-2' : 'pt-3',
-          )}
-        >
+        <View className="items-center" style={{ paddingTop: 24.5 * scale }}>
           <Image
             source={logo}
             alt="Upya"
@@ -295,22 +284,39 @@ export default function ProfessionalOnboardingPage() {
           />
         </View>
 
-        <View className="min-h-0 w-full flex-1 items-center justify-center">
-          <SchedulePreview s={scheduleScale} />
+        <View
+          className="relative self-center"
+          style={{
+            width: illustrationWidth,
+            height: illustrationHeight,
+            marginTop: 49.5 * scale,
+          }}
+        >
+          <View
+            className="absolute"
+            style={{ left: 7 * scale, top: 18.7 * scale }}
+          >
+            <SchedulePreview s={scheduleScale} />
+          </View>
+          <LinearGradient
+            pointerEvents="none"
+            colors={['#000000', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0)']}
+            locations={[0.003, 0.4, 0.997]}
+            style={{
+              position: 'absolute',
+              width: illustrationWidth,
+              height: illustrationHeight,
+            }}
+          />
         </View>
 
-        <View
-          className={cn(
-            'w-full shrink-0',
-            isVeryCompact ? 'gap-4 pb-1' : 'gap-6 pb-2',
-          )}
-        >
+        <View className="mt-auto w-full gap-8 pb-1.5 pt-8">
           <View className="w-full gap-2">
             <Text
-              className="text-center font-display-semibold leading-[1.4] text-gray-100"
+              className="text-center font-display leading-[1.4] tracking-[0.64px] text-gray-100"
               style={{ fontSize: titleSize }}
             >
-              Trabalhe no seu ritmo
+              {'Trabalhe no\nseu ritmo'}
             </Text>
             <Text
               className="text-center font-sans leading-[1.4] tracking-[-0.32px] text-gray-500"
@@ -321,11 +327,11 @@ export default function ProfessionalOnboardingPage() {
             </Text>
           </View>
 
-          <View className="w-full gap-3">
+          <View className="w-full gap-4">
             <ButtonLink
               href={{ pathname: '/login', params: { role: 'professional' } }}
             >
-              Avançar
+              Continuar
             </ButtonLink>
             <ButtonBack>Voltar</ButtonBack>
           </View>
