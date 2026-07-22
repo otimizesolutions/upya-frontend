@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export function onlyDigits(value: string) {
   return value.replace(/\D/g, '');
 }
@@ -24,3 +26,22 @@ export function isValidCpf(value: string) {
     calculateDigit(10) === Number(cpf[10])
   );
 }
+
+/** Mensagens alinhadas à API (`user.password`). */
+export const PASSWORD_MIN_LENGTH_MESSAGE = 'Deve ter pelo menos 8 caracteres';
+export const PASSWORD_SPECIAL_CHAR_MESSAGE =
+  'Deve conter um caractere especial';
+export const PASSWORD_SPECIAL_CHAR_REGEX = /[^A-Za-z0-9]/;
+
+export function hasPasswordMinLength(value: string) {
+  return value.length >= 8;
+}
+
+export function hasPasswordSpecialChar(value: string) {
+  return PASSWORD_SPECIAL_CHAR_REGEX.test(value);
+}
+
+export const passwordSchema = z
+  .string()
+  .min(8, PASSWORD_MIN_LENGTH_MESSAGE)
+  .regex(PASSWORD_SPECIAL_CHAR_REGEX, PASSWORD_SPECIAL_CHAR_MESSAGE);

@@ -20,6 +20,12 @@ import { ClientRegistrationShell } from '@/components/client-registration-shell'
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/ui/text';
 import { useClientRegistrationForm } from '@/domains/client-registration/context';
+import {
+  hasPasswordMinLength,
+  hasPasswordSpecialChar,
+  PASSWORD_MIN_LENGTH_MESSAGE,
+  PASSWORD_SPECIAL_CHAR_MESSAGE,
+} from '@/domains/registration/validation';
 
 type RegistrationStep =
   'email' | 'phone' | 'otp' | 'personal' | 'password' | 'success';
@@ -326,8 +332,8 @@ function PasswordStep() {
   const data = form.watch();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
-  const hasLength = data.password.length >= 8;
-  const hasSpecial = /[^A-Za-z0-9]/.test(data.password);
+  const hasLength = hasPasswordMinLength(data.password);
+  const hasSpecial = hasPasswordSpecialChar(data.password);
   const passwordsMatch =
     data.confirmPassword.length > 0 && data.password === data.confirmPassword;
 
@@ -372,10 +378,10 @@ function PasswordStep() {
           />
           <View className="gap-3">
             <PasswordRequirement checked={hasLength}>
-              Deve ter pelo menos 8 caracteres
+              {PASSWORD_MIN_LENGTH_MESSAGE}
             </PasswordRequirement>
             <PasswordRequirement checked={hasSpecial}>
-              Deve conter um caractere especial
+              {PASSWORD_SPECIAL_CHAR_MESSAGE}
             </PasswordRequirement>
           </View>
         </View>

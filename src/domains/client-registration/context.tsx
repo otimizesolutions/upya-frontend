@@ -2,7 +2,11 @@ import type { PropsWithChildren } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormProvider, useForm, useFormContext } from 'react-hook-form';
 import { z } from 'zod';
-import { isValidCpf, onlyDigits } from '@/domains/registration/validation';
+import {
+  isValidCpf,
+  onlyDigits,
+  passwordSchema,
+} from '@/domains/registration/validation';
 
 export const clientRegistrationSchema = z
   .object({
@@ -36,10 +40,7 @@ export const clientRegistrationSchema = z
       .string()
       .min(1, 'Informe seu CPF.')
       .refine(isValidCpf, 'Digite um CPF válido.'),
-    password: z
-      .string()
-      .min(8, 'A senha deve ter pelo menos 8 caracteres.')
-      .regex(/[^A-Za-z0-9]/, 'A senha deve conter um caractere especial.'),
+    password: passwordSchema,
     confirmPassword: z.string().min(1, 'Confirme sua senha.'),
   })
   .refine((values) => values.email === values.confirmEmail, {
