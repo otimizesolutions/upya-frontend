@@ -161,7 +161,7 @@ export default function LoginPage() {
   const loginMutation = useLoginMutation(form);
 
   function handleSubmit(values: LoginFormValues) {
-    loginMutation.mutate(values);
+    loginMutation.mutate({ ...values, role });
   }
 
   const heroSource = role === 'client' ? clientHero : professionalHero;

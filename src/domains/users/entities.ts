@@ -4,4 +4,7 @@ export interface User {
   email: string;
   name: string;
   date_joined: string;
+  phone?: string;
+  photo?: string | null;
+  is_phone_confirmed?: boolean;
 }

@@ -9,10 +9,18 @@ export const login = async (email: string, password: string) => {
   return data;
 };
 
+export const loginProfessional = async (email: string, password: string) => {
+  const { data } = await api.post<AuthResponse>('/auth/professional/token/', {
+    email,
+    password,
+  });
+  return data;
+};
+
 export const refresh = async (
   refreshToken: string,
 ): Promise<RefreshResponse> => {
-  const { data } = await api.post<AuthResponse>('/auth/token/refresh/', {
+  const { data } = await api.post<RefreshResponse>('/auth/token/refresh/', {
     refresh: refreshToken,
   });
   return data;
