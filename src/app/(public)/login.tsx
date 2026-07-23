@@ -16,7 +16,8 @@ import {
   type LoginRole,
 } from '@/components/login-role-toggle';
 import { LoginTextField } from '@/components/login-text-field';
-import { Screen } from '@/components/screen';
+import { RegistrationErrorMessage } from '@/components/client-registration-field';
+import { FormScreen } from '@/components/form-screen';
 import { Text } from '@/components/ui/text';
 import { useLoginMutation } from '@/domains/auth/mutations';
 import { cn } from '@/lib/utils';
@@ -159,9 +160,15 @@ export default function LoginPage() {
     },
   });
   const loginMutation = useLoginMutation(form);
+  const errors = form.formState.errors;
+  const loginError =
+    errors.root?.message ??
+    errors.email?.message ??
+    errors.password?.message;
+  const hasLoginError = !!(errors.root || errors.email || errors.password);
 
   function handleSubmit(values: LoginFormValues) {
-    loginMutation.mutate(values);
+    loginMutation.mutate({ ...values, role });
   }
 
   const heroSource = role === 'client' ? clientHero : professionalHero;
@@ -231,11 +238,7 @@ export default function LoginPage() {
         />
       </View>
 
-      <Screen
-        className="bg-transparent"
-        contentClassName="px-0"
-        scroll={isCompact}
-      >
+      <FormScreen className="bg-transparent" contentClassName="px-0">
         <View
           className={cn(
             'w-full flex-1 self-center',
@@ -259,11 +262,13 @@ export default function LoginPage() {
                 <View className="w-full gap-4">
                   <LoginTextField
                     control={form.control}
+                    forceError={hasLoginError}
                     name="email"
                     placeholder="Insira seu Email"
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoComplete="email"
+                    showErrorMessage={false}
                     textContentType="emailAddress"
                     leftAdorn={
                       <Mail size={20} color="#ffffff" strokeWidth={1.75} />
@@ -273,10 +278,12 @@ export default function LoginPage() {
                   <View className="w-full gap-1">
                     <LoginTextField
                       control={form.control}
+                      forceError={hasLoginError}
                       name="password"
                       placeholder="Insira sua senha"
                       secureTextEntry={!isPasswordVisible}
                       autoComplete="password"
+                      showErrorMessage={false}
                       textContentType="password"
                       leftAdorn={
                         <LockKeyhole
@@ -308,6 +315,12 @@ export default function LoginPage() {
                         </Pressable>
                       }
                     />
+
+                    {!!loginError && (
+                      <View className="pt-1">
+                        <RegistrationErrorMessage message={loginError} />
+                      </View>
+                    )}
 
                     <Link href="/forgot" asChild>
                       <Pressable
@@ -344,6 +357,13 @@ export default function LoginPage() {
               <Pressable
                 accessibilityRole="button"
                 className="h-[52px] w-full items-center justify-center bg-gray-1000"
+                onPress={() => {
+                  if (role === 'client') {
+                    router.push('/register/client/email');
+                  } else {
+                    router.push('/register/professional/email');
+                  }
+                }}
               >
                 <Text className="font-display-semibold text-[20px] leading-[1.4] text-gray-100">
                   Cadastre-se
@@ -352,7 +372,7 @@ export default function LoginPage() {
             </View>
           </View>
         </View>
-      </Screen>
+      </FormScreen>
     </View>
   );
 }

@@ -4,4 +4,8 @@ export interface User {
   email: string;
   name: string;
   date_joined: string;
+  photo?: string | null;
+  is_phone_confirmed?: boolean;
+  /** Perfil de cliente — sem dados sensíveis. */
+  customerId?: number | null;
 }

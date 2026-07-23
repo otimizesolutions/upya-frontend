@@ -14,7 +14,8 @@ export type ScreenProps = PropsWithChildren<{
 
 /**
  * Wrapper padrão de tela: SafeAreaView + layout flex responsivo.
- * Use `scroll` em formulários ou conteúdos que possam ultrapassar a altura.
+ * Use `scroll` para conteúdos longos sem inputs.
+ * Para formulários (TextInput), use `FormScreen` (`@/components/form-screen`).
  */
 export function Screen({
   children,

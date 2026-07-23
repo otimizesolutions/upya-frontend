@@ -1,10 +1,12 @@
 import { api } from '@/lib/axios';
-import { User } from './entities';
+import type { AuthApiUser } from '@/domains/auth/entities';
+import { toSessionUser } from '@/domains/auth/entities';
+import type { User } from './entities';
 
-export const getAuthenticatedUser = async () => {
+export const getAuthenticatedUser = async (): Promise<User | null> => {
   try {
-    const { data } = await api.get<User>('/users/me/');
-    return data;
+    const { data } = await api.get<AuthApiUser>('/users/me/');
+    return toSessionUser(data);
   } catch {
     return null;
   }

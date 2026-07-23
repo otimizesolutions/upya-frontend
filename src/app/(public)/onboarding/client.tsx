@@ -7,11 +7,10 @@ import { ButtonBack } from '@/components/button-back';
 import { ButtonLink } from '@/components/button-link';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/ui/text';
-import { cn } from '@/lib/utils';
 
 /** Frame Figma 390×844 — Onboard cliente (11132:333). */
 const FIGMA_WIDTH = 390;
-const FIGMA_HEIGHT = 844;
+const FIGMA_CONTENT_HEIGHT = 770;
 const LOGO_WIDTH = 171;
 const LOGO_HEIGHT = 34;
 /** Export 2x do stack de cards (11132:370): 752×556. */
@@ -24,45 +23,30 @@ export default function ClientOnboardingPage() {
   const insets = useSafeAreaInsets();
   const usableHeight = height - insets.top - insets.bottom;
 
-  const scale = Math.min(width / FIGMA_WIDTH, usableHeight / FIGMA_HEIGHT, 1);
-  const isCompact = usableHeight < 700;
-  const isVeryCompact = usableHeight < 600;
+  const scale = Math.min(width / FIGMA_WIDTH, 1);
+  const isCompact = usableHeight < FIGMA_CONTENT_HEIGHT || width > height;
 
   const logoWidth = LOGO_WIDTH * scale;
   const logoHeight = LOGO_HEIGHT * scale;
-
-  /** Espaço reservado para logo + texto + botões + gaps. */
-  const reservedVertical =
-    logoHeight + (isVeryCompact ? 220 : isCompact ? 250 : 280);
-  const cardsMaxByHeight = Math.max(
-    usableHeight - reservedVertical,
-    usableHeight * 0.28,
-  );
-  const cardsMaxByWidth = Math.min(376 * scale, width - 32, CONTENT_MAX_WIDTH);
-  const cardsWidth = Math.min(cardsMaxByWidth, cardsMaxByHeight * CARDS_ASPECT);
+  const cardsWidth = Math.min(358 * scale, width - 32, CONTENT_MAX_WIDTH);
   const cardsHeight = cardsWidth / CARDS_ASPECT;
 
-  const titleSize = Math.round(24 * Math.max(scale, 0.88));
-  const bodySize = Math.round(16 * Math.max(scale, 0.88));
+  const titleSize = Math.round(32 * Math.max(scale, 0.88));
+  const bodySize = Math.round(16 * Math.max(scale, 0.9));
+  const compactMinHeight = FIGMA_CONTENT_HEIGHT * Math.max(scale, 0.9);
 
   return (
     <Screen className="bg-gray-1000" contentClassName="px-4" scroll={isCompact}>
       <StatusBar style="light" />
 
       <View
-        className={cn(
-          'w-full flex-1 self-center',
-          isCompact ? 'min-h-full justify-between' : 'justify-between',
-        )}
-        style={{ maxWidth: CONTENT_MAX_WIDTH }}
+        className="w-full flex-1 self-center"
+        style={{
+          maxWidth: CONTENT_MAX_WIDTH,
+          minHeight: isCompact ? compactMinHeight : undefined,
+        }}
       >
-        {/* Logo — Figma y≈47 */}
-        <View
-          className={cn(
-            'items-center',
-            isVeryCompact ? 'pt-1' : isCompact ? 'pt-2' : 'pt-1.5',
-          )}
-        >
+        <View className="items-center" style={{ paddingTop: 20 * scale }}>
           <Image
             source={logo}
             alt="Upya"
@@ -72,8 +56,7 @@ export default function ClientOnboardingPage() {
           />
         </View>
 
-        {/* Cards — Figma y=151, largura ~376 */}
-        <View className="min-h-0 flex-1 items-center justify-center py-2">
+        <View className="items-center" style={{ marginTop: 53 * scale }}>
           <Image
             source={professionalCards}
             alt="Profissionais Upya"
@@ -83,19 +66,16 @@ export default function ClientOnboardingPage() {
           />
         </View>
 
-        {/* Texto + botões — Figma y=512, gap 24 entre blocos */}
-        <View
-          className={cn('w-full', isVeryCompact ? 'gap-4 pb-1' : 'gap-6 pb-2')}
-        >
-          <View className="w-full gap-2">
+        <View className="mt-auto w-full gap-8 pb-1.5 pt-8">
+          <View className="w-full gap-4">
             <Text
-              className="text-center font-display-semibold leading-[1.4] text-gray-100"
+              className="text-center font-display leading-[1.4] tracking-[0.64px] text-gray-100"
               style={{ fontSize: titleSize }}
             >
               Sua recuperação começa aqui!
             </Text>
             <Text
-              className="text-center font-sans leading-[1.4] text-gray-400"
+              className="text-center font-sans leading-[1.4] tracking-[-0.32px] text-gray-500"
               style={{ fontSize: bodySize }}
             >
               Conecte-se a profissionais qualificados para cuidar da sua saúde
@@ -103,11 +83,11 @@ export default function ClientOnboardingPage() {
             </Text>
           </View>
 
-          <View className="w-full gap-3">
+          <View className="w-full gap-4">
             <ButtonLink
               href={{ pathname: '/login', params: { role: 'client' } }}
             >
-              Avançar
+              Continuar
             </ButtonLink>
             <ButtonBack>Voltar</ButtonBack>
           </View>

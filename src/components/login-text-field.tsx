@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo } from 'react';
+import { cloneElement, isValidElement, type ReactNode, useMemo } from 'react';
 import {
   type Control,
   Controller,
@@ -24,6 +24,10 @@ export type LoginTextFieldProps<
   rightAdorn?: ReactNode;
   containerClassName?: string;
   helperText?: string;
+  /** Destaca o campo em erro mesmo sem mensagem local (erro compartilhado). */
+  forceError?: boolean;
+  /** Quando false, a mensagem fica a cargo do layout pai. */
+  showErrorMessage?: boolean;
 };
 
 /**
@@ -42,13 +46,21 @@ export function LoginTextField<
   rightAdorn,
   containerClassName,
   helperText,
+  forceError = false,
+  showErrorMessage = true,
   ...props
 }: LoginTextFieldProps<TFieldValues, TName> & { className?: string }) {
-  const { getFieldState, formState } = useFormContext();
+  const { getFieldState, formState, clearErrors } = useFormContext();
 
   const fieldState = useMemo(() => {
     return getFieldState(name, formState);
   }, [getFieldState, name, formState]);
+
+  const hasError = !!fieldState?.error || forceError;
+  const renderedLeftAdorn =
+    hasError && isValidElement<{ color?: string }>(leftAdorn)
+      ? cloneElement(leftAdorn, { color: '#ed5562' })
+      : leftAdorn;
 
   return (
     <Controller
@@ -56,8 +68,13 @@ export function LoginTextField<
       name={name}
       render={({ field }) => (
         <View className={cn('w-full items-stretch', containerClassName)}>
-          <View className="h-[52px] w-full flex-row items-center gap-2 rounded-full border border-gray-800 bg-gray-900 px-4">
-            {leftAdorn}
+          <View
+            className={cn(
+              'h-[52px] w-full flex-row items-center gap-2 rounded-full border bg-gray-900 px-4',
+              hasError ? 'border-red-500' : 'border-gray-800',
+            )}
+          >
+            {renderedLeftAdorn}
             <Input
               className={cn(
                 'h-[52px] flex-1 border-0 bg-transparent px-0 font-sans text-[14px] leading-[1.5] text-gray-100',
@@ -65,7 +82,12 @@ export function LoginTextField<
               )}
               style={style}
               placeholderTextColor="#868b91"
-              onChangeText={(text) => field.onChange(text)}
+              onChangeText={(text) => {
+                if (fieldState?.error || formState.errors.root) {
+                  clearErrors();
+                }
+                field.onChange(text);
+              }}
               value={field.value}
               ref={field.ref}
               onBlur={() => field.onBlur()}
@@ -74,10 +96,12 @@ export function LoginTextField<
             {rightAdorn}
           </View>
 
-          <FormMessage
-            error={fieldState?.error?.message}
-            message={helperText}
-          />
+          {showErrorMessage && (
+            <FormMessage
+              error={fieldState?.error?.message}
+              message={helperText}
+            />
+          )}
         </View>
       )}
     />

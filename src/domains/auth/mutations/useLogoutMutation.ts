@@ -8,7 +8,8 @@ export const useLogoutMutation = () => {
   return useMutation({
     mutationFn: async () => {
       await clearAuth();
-      await queryClient.refetchQueries({ queryKey: ['authenticated-user'] });
+      queryClient.setQueryData(['authenticated-user'], null);
+      await queryClient.removeQueries({ queryKey: ['authenticated-user'] });
     },
   });
 };

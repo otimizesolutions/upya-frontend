@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { TextField } from '@/components/text-field';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
-import { Screen } from '@/components/screen';
+import { FormScreen } from '@/components/form-screen';
 import { Text } from '@/components/ui/text';
 import { Link } from '@/components/link';
 
@@ -34,7 +34,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <Screen scroll contentClassName="justify-center px-8 py-6">
+    <FormScreen contentClassName="justify-center px-8 py-6">
       <Text variant="headingLg" className="mb-3 text-center">
         Esqueci a senha
       </Text>
@@ -76,6 +76,6 @@ export default function ForgotPasswordPage() {
           </Link>
         </View>
       </Form>
-    </Screen>
+    </FormScreen>
   );
 }
