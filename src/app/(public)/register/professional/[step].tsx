@@ -19,7 +19,11 @@ import { ClientRegistrationOtp } from '@/components/client-registration-otp';
 import { ClientRegistrationShell } from '@/components/client-registration-shell';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/ui/text';
-import { useProfessionalRegistrationForm } from '@/domains/professional-registration/context';
+import {
+  type ProfessionalRegistrationData,
+  useProfessionalRegistrationForm,
+} from '@/domains/professional-registration/context';
+import { useCreateProfessionalMutation } from '@/domains/professionals/mutations';
 import {
   hasPasswordMinLength,
   hasPasswordSpecialChar,
@@ -28,12 +32,50 @@ import {
 } from '@/domains/registration/validation';
 
 type RegistrationStep =
-  'email' | 'phone' | 'otp' | 'personal' | 'crefito' | 'password' | 'success';
+  | 'email'
+  | 'phone'
+  | 'otp'
+  | 'personal'
+  | 'crefito'
+  | 'password'
+  | 'success';
 
 const iconProps = { color: '#868b91', size: 20, strokeWidth: 1.75 };
 
+const FIELD_STEP: Partial<
+  Record<keyof ProfessionalRegistrationData, RegistrationStep>
+> = {
+  email: 'email',
+  confirmEmail: 'email',
+  phone: 'phone',
+  fullName: 'personal',
+  cpf: 'personal',
+  crefito: 'crefito',
+  password: 'password',
+  confirmPassword: 'password',
+};
+
+const STEP_PRIORITY: RegistrationStep[] = [
+  'email',
+  'phone',
+  'personal',
+  'crefito',
+  'password',
+];
+
 function routeFor(step: RegistrationStep): Href {
   return `/register/professional/${step}` as Href;
+}
+
+function resolveStepForFields(
+  fields: (keyof ProfessionalRegistrationData)[],
+): RegistrationStep | null {
+  for (const step of STEP_PRIORITY) {
+    if (fields.some((field) => FIELD_STEP[field] === step)) {
+      return step;
+    }
+  }
+  return null;
 }
 
 function onlyDigits(value: string) {
@@ -371,16 +413,31 @@ function PasswordStep() {
   const hasSpecial = hasPasswordSpecialChar(password);
   const passwordsMatch =
     confirmPassword.length > 0 && password === confirmPassword;
+  const passwordError =
+    form.formState.errors.password?.message ??
+    form.formState.errors.confirmPassword?.message;
+
+  const createProfessional = useCreateProfessionalMutation(form, {
+    onSuccess: () => {
+      router.push(routeFor('success'));
+    },
+    onFieldErrors: (fields) => {
+      const step = resolveStepForFields(fields);
+      if (step && step !== 'password') {
+        router.navigate(routeFor(step));
+      }
+    },
+  });
 
   return (
     <ClientRegistrationShell
       activeStep={6}
       totalSteps={6}
       disabled={!hasLength || !hasSpecial || !passwordsMatch}
+      loading={createProfessional.isPending}
       onContinue={async () => {
-        if (await form.trigger(['password', 'confirmPassword'])) {
-          router.push(routeFor('success'));
-        }
+        if (!(await form.trigger(['password', 'confirmPassword']))) return;
+        createProfessional.mutate(form.getValues());
       }}
     >
       <View className="w-full gap-6">
@@ -392,25 +449,30 @@ function PasswordStep() {
             autoComplete="new-password"
             autoFocus
             control={form.control}
+            forceError={!!form.formState.errors.password}
             icon={<LockKeyhole {...iconProps} />}
             label="Senha"
             name="password"
             secureTextEntry={!passwordVisible}
             secureVisible={passwordVisible}
+            showErrorMessage={false}
             textContentType="newPassword"
             onToggleSecure={() => setPasswordVisible((current) => !current)}
           />
           <ClientRegistrationField
             autoComplete="new-password"
             control={form.control}
+            forceError={!!form.formState.errors.confirmPassword}
             icon={<LockKeyhole {...iconProps} />}
             label="Confirmar Senha"
             name="confirmPassword"
             secureTextEntry={!confirmVisible}
             secureVisible={confirmVisible}
+            showErrorMessage={false}
             textContentType="newPassword"
             onToggleSecure={() => setConfirmVisible((current) => !current)}
           />
+          <RegistrationErrorMessage message={passwordError} />
           <View className="gap-3">
             <PasswordRequirement checked={hasLength}>
               {PASSWORD_MIN_LENGTH_MESSAGE}

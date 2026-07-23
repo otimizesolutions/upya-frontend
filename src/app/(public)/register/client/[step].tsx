@@ -19,7 +19,11 @@ import { ClientRegistrationOtp } from '@/components/client-registration-otp';
 import { ClientRegistrationShell } from '@/components/client-registration-shell';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/ui/text';
-import { useClientRegistrationForm } from '@/domains/client-registration/context';
+import {
+  type ClientRegistrationData,
+  useClientRegistrationForm,
+} from '@/domains/client-registration/context';
+import { useCreateCustomerMutation } from '@/domains/customers/mutations';
 import {
   hasPasswordMinLength,
   hasPasswordSpecialChar,
@@ -28,12 +32,47 @@ import {
 } from '@/domains/registration/validation';
 
 type RegistrationStep =
-  'email' | 'phone' | 'otp' | 'personal' | 'password' | 'success';
+  | 'email'
+  | 'phone'
+  | 'otp'
+  | 'personal'
+  | 'password'
+  | 'success';
 
 const iconProps = { color: '#868b91', size: 20, strokeWidth: 1.75 };
 
+const FIELD_STEP: Partial<
+  Record<keyof ClientRegistrationData, RegistrationStep>
+> = {
+  email: 'email',
+  confirmEmail: 'email',
+  phone: 'phone',
+  fullName: 'personal',
+  cpf: 'personal',
+  password: 'password',
+  confirmPassword: 'password',
+};
+
+const STEP_PRIORITY: RegistrationStep[] = [
+  'email',
+  'phone',
+  'personal',
+  'password',
+];
+
 function routeFor(step: RegistrationStep): Href {
   return `/register/client/${step}` as Href;
+}
+
+function resolveStepForFields(
+  fields: (keyof ClientRegistrationData)[],
+): RegistrationStep | null {
+  for (const step of STEP_PRIORITY) {
+    if (fields.some((field) => FIELD_STEP[field] === step)) {
+      return step;
+    }
+  }
+  return null;
 }
 
 function onlyDigits(value: string) {
@@ -336,16 +375,31 @@ function PasswordStep() {
   const hasSpecial = hasPasswordSpecialChar(data.password);
   const passwordsMatch =
     data.confirmPassword.length > 0 && data.password === data.confirmPassword;
+  const passwordError =
+    form.formState.errors.password?.message ??
+    form.formState.errors.confirmPassword?.message;
+
+  const createCustomer = useCreateCustomerMutation(form, {
+    onSuccess: () => {
+      router.push(routeFor('success'));
+    },
+    onFieldErrors: (fields) => {
+      const step = resolveStepForFields(fields);
+      if (step && step !== 'password') {
+        router.navigate(routeFor(step));
+      }
+    },
+  });
 
   return (
     <ClientRegistrationShell
       activeStep={6}
       totalSteps={6}
       disabled={!hasLength || !hasSpecial || !passwordsMatch}
+      loading={createCustomer.isPending}
       onContinue={async () => {
-        if (await form.trigger(['password', 'confirmPassword'])) {
-          router.push(routeFor('success'));
-        }
+        if (!(await form.trigger(['password', 'confirmPassword']))) return;
+        createCustomer.mutate(form.getValues());
       }}
     >
       <View className="w-full gap-6">
@@ -357,25 +411,30 @@ function PasswordStep() {
             autoFocus
             autoComplete="new-password"
             control={form.control}
+            forceError={!!form.formState.errors.password}
             icon={<LockKeyhole {...iconProps} />}
             label="Senha"
             name="password"
             secureTextEntry={!passwordVisible}
             secureVisible={passwordVisible}
+            showErrorMessage={false}
             textContentType="newPassword"
             onToggleSecure={() => setPasswordVisible((current) => !current)}
           />
           <ClientRegistrationField
             autoComplete="new-password"
             control={form.control}
+            forceError={!!form.formState.errors.confirmPassword}
             icon={<LockKeyhole {...iconProps} />}
             label="Confirmar Senha"
             name="confirmPassword"
             secureTextEntry={!confirmVisible}
             secureVisible={confirmVisible}
+            showErrorMessage={false}
             textContentType="newPassword"
             onToggleSecure={() => setConfirmVisible((current) => !current)}
           />
+          <RegistrationErrorMessage message={passwordError} />
           <View className="gap-3">
             <PasswordRequirement checked={hasLength}>
               {PASSWORD_MIN_LENGTH_MESSAGE}

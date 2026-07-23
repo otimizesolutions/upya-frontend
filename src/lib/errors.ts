@@ -48,29 +48,89 @@ export const parseActionError = (
   return { nonFieldError: defaultMessage };
 };
 
+/** Achata erros aninhados do DRF (`user.email` → path `user.email`). */
+export const flattenFieldErrors = (
+  fieldErrors: Record<string, unknown>,
+  prefix = '',
+): Record<string, string> => {
+  const result: Record<string, string> = {};
+
+  for (const [key, value] of Object.entries(fieldErrors)) {
+    if (key === 'non_field_errors' || key === 'detail') continue;
+
+    const path = prefix ? `${prefix}.${key}` : key;
+
+    if (Array.isArray(value)) {
+      if (value.length > 0) {
+        result[path] = String(value[0]);
+      }
+      continue;
+    }
+
+    if (value && typeof value === 'object') {
+      Object.assign(
+        result,
+        flattenFieldErrors(value as Record<string, unknown>, path),
+      );
+      continue;
+    }
+
+    if (value != null && value !== '') {
+      result[path] = String(value);
+    }
+  }
+
+  return result;
+};
+
+export type ApplyFormErrorsOptions = {
+  defaultMessage?: string;
+  /** Mapa de path da API → nome do campo no react-hook-form. */
+  fieldMap?: Record<string, string>;
+};
+
+/**
+ * Aplica erros de validação da API no formulário.
+ * Retorna os nomes dos campos do form que receberam erro.
+ */
 export const applyFormErrors = (
   error: unknown,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: Form<any>,
-  defaultMessage: string = DEFAULT_MESSAGE,
-) => {
+  defaultMessageOrOptions: string | ApplyFormErrorsOptions = DEFAULT_MESSAGE,
+): string[] => {
+  const options: ApplyFormErrorsOptions =
+    typeof defaultMessageOrOptions === 'string'
+      ? { defaultMessage: defaultMessageOrOptions }
+      : defaultMessageOrOptions;
+  const defaultMessage = options.defaultMessage ?? DEFAULT_MESSAGE;
+
   const { nonFieldError, fieldErrors } = parseActionError(
     error,
     defaultMessage,
   );
+  const appliedFields: string[] = [];
+
   if (fieldErrors) {
-    for (const field of Object.keys(fieldErrors)) {
-      const errorValue = fieldErrors[field];
-      const errorMessage = Array.isArray(errorValue)
-        ? String(errorValue[0])
-        : String(errorValue);
-      form.setError(field, { message: errorMessage });
+    const nestedNonField = fieldErrors.non_field_errors;
+    if (Array.isArray(nestedNonField) && nestedNonField.length > 0) {
+      toast(String(nestedNonField[0]));
+    }
+
+    const flatErrors = flattenFieldErrors(fieldErrors);
+
+    for (const [apiField, errorMessage] of Object.entries(flatErrors)) {
+      const formField = options.fieldMap?.[apiField] ?? apiField;
+      form.setError(formField, { message: errorMessage });
+      appliedFields.push(formField);
     }
   }
 
   if (nonFieldError) {
     toast(nonFieldError);
   }
+
+  return appliedFields;
 };
 
 export const applyNonFormErrors = (

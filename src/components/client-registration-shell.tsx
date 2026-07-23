@@ -11,6 +11,7 @@ type ClientRegistrationShellProps = PropsWithChildren<{
   activeStep: number;
   buttonLabel?: string;
   disabled?: boolean;
+  loading?: boolean;
   onContinue: () => void;
   totalSteps?: number;
 }>;
@@ -20,10 +21,12 @@ export function ClientRegistrationShell({
   buttonLabel = 'Continuar',
   children,
   disabled,
+  loading = false,
   onContinue,
   totalSteps = 5,
 }: ClientRegistrationShellProps) {
   const router = useRouter();
+  const isDisabled = disabled || loading;
 
   return (
     <Screen
@@ -70,12 +73,12 @@ export function ClientRegistrationShell({
 
         <View className="-mt-4 w-full p-4">
           <Button
-            disabled={disabled}
+            disabled={isDisabled}
             onPress={onContinue}
-            className={disabled ? 'bg-neon-200' : undefined}
-            textClassName={disabled ? 'text-gray-700' : undefined}
+            className={isDisabled ? 'bg-neon-200' : undefined}
+            textClassName={isDisabled ? 'text-gray-700' : undefined}
           >
-            {buttonLabel}
+            {loading ? 'Enviando...' : buttonLabel}
           </Button>
         </View>
       </View>
