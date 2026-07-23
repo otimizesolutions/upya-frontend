@@ -4,7 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ChevronLeft } from 'lucide-react-native';
 import { Pressable, View } from 'react-native';
 import { Button } from '@/components/ui/button';
-import { Screen } from '@/components/screen';
+import { FormScreen } from '@/components/form-screen';
 import { Text } from '@/components/ui/text';
 
 type ClientRegistrationShellProps = PropsWithChildren<{
@@ -29,10 +29,9 @@ export function ClientRegistrationShell({
   const isDisabled = disabled || loading;
 
   return (
-    <Screen
+    <FormScreen
       className="bg-gray-1000"
       contentClassName="px-4"
-      scroll
       edges={['top', 'bottom']}
     >
       <StatusBar style="light" />
@@ -82,6 +81,6 @@ export function ClientRegistrationShell({
           </Button>
         </View>
       </View>
-    </Screen>
+    </FormScreen>
   );
 }

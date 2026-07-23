@@ -16,7 +16,7 @@ import {
   type LoginRole,
 } from '@/components/login-role-toggle';
 import { LoginTextField } from '@/components/login-text-field';
-import { Screen } from '@/components/screen';
+import { FormScreen } from '@/components/form-screen';
 import { Text } from '@/components/ui/text';
 import { useLoginMutation } from '@/domains/auth/mutations';
 import { cn } from '@/lib/utils';
@@ -231,11 +231,7 @@ export default function LoginPage() {
         />
       </View>
 
-      <Screen
-        className="bg-transparent"
-        contentClassName="px-0"
-        scroll={isCompact}
-      >
+      <FormScreen className="bg-transparent" contentClassName="px-0">
         <View
           className={cn(
             'w-full flex-1 self-center',
@@ -359,7 +355,7 @@ export default function LoginPage() {
             </View>
           </View>
         </View>
-      </Screen>
+      </FormScreen>
     </View>
   );
 }

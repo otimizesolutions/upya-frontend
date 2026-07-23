@@ -23,6 +23,11 @@ import {
   type ClientRegistrationData,
   useClientRegistrationForm,
 } from '@/domains/client-registration/context';
+import {
+  resolveCustomerStepForField,
+  resolveFirstCustomerErrorField,
+  type ClientRegistrationStep,
+} from '@/domains/customers/errors';
 import { useCreateCustomerMutation } from '@/domains/customers/mutations';
 import {
   hasPasswordMinLength,
@@ -30,87 +35,56 @@ import {
   PASSWORD_MIN_LENGTH_MESSAGE,
   PASSWORD_SPECIAL_CHAR_MESSAGE,
 } from '@/domains/registration/validation';
-
-type RegistrationStep =
-  | 'email'
-  | 'phone'
-  | 'otp'
-  | 'personal'
-  | 'password'
-  | 'success';
+import {
+  CPF_MASK,
+  CPF_MAX_LENGTH,
+  PHONE_MASK,
+  PHONE_MAX_LENGTH,
+} from '@/lib/masks';
 
 const iconProps = { color: '#868b91', size: 20, strokeWidth: 1.75 };
 
-const FIELD_STEP: Partial<
-  Record<keyof ClientRegistrationData, RegistrationStep>
-> = {
-  email: 'email',
-  confirmEmail: 'email',
-  phone: 'phone',
-  fullName: 'personal',
-  cpf: 'personal',
-  password: 'password',
-  confirmPassword: 'password',
-};
+type FocusField = keyof ClientRegistrationData;
 
-const STEP_PRIORITY: RegistrationStep[] = [
-  'email',
-  'phone',
-  'personal',
-  'password',
-];
-
-function routeFor(step: RegistrationStep): Href {
-  return `/register/client/${step}` as Href;
-}
-
-function resolveStepForFields(
-  fields: (keyof ClientRegistrationData)[],
-): RegistrationStep | null {
-  for (const step of STEP_PRIORITY) {
-    if (fields.some((field) => FIELD_STEP[field] === step)) {
-      return step;
-    }
-  }
-  return null;
+function routeFor(step: ClientRegistrationStep, focus?: FocusField): Href {
+  return {
+    pathname: '/register/client/[step]',
+    params: focus ? { step, focus } : { step },
+  };
 }
 
 function onlyDigits(value: string) {
   return value.replace(/\D/g, '');
 }
 
-function formatPhone(value: string) {
-  const digits = onlyDigits(value).slice(0, 11);
-  if (digits.length <= 2) return digits;
-  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-  if (digits.length <= 10) {
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
-  }
-  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-}
+function useFocusField(fieldName?: string) {
+  const form = useClientRegistrationForm();
 
-function formatCpf(value: string) {
-  const digits = onlyDigits(value).slice(0, 11);
-  return digits
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  useEffect(() => {
+    if (!fieldName) return;
+
+    const timer = setTimeout(() => {
+      form.setFocus(fieldName as FocusField);
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [fieldName, form]);
 }
 
 function EmailStep() {
   const router = useRouter();
   const form = useClientRegistrationForm();
-  const data = form.watch();
+  const params = useLocalSearchParams<{ focus?: string }>();
+  const email = form.watch('email');
+  const confirmEmail = form.watch('confirmEmail');
   const errors = form.formState.errors;
-  const isMismatch =
-    errors.confirmEmail?.message === 'Os e-mails não coincidem.';
-  const hasGroupError = !!(errors.email || errors.confirmEmail) && !isMismatch;
-  const errorMessage = errors.email?.message ?? errors.confirmEmail?.message;
+  const focusField = params.focus;
+  useFocusField(focusField);
 
   return (
     <ClientRegistrationShell
       activeStep={1}
-      disabled={!data.email || !data.confirmEmail}
+      disabled={!email || !confirmEmail}
       onContinue={async () => {
         if (await form.trigger(['email', 'confirmEmail'])) {
           router.push(routeFor('phone'));
@@ -121,33 +95,31 @@ function EmailStep() {
         <ClientRegistrationField
           autoCapitalize="none"
           autoComplete="email"
-          autoFocus
+          autoFocus={focusField === 'email' || !focusField}
           control={form.control}
-          forceError={hasGroupError || !!errors.email}
+          forceError={!!errors.email}
           icon={<Mail {...iconProps} />}
           keyboardType="email-address"
           label="Insira seu e-mail"
           name="email"
           returnKeyType="next"
-          showErrorMessage={false}
           textContentType="emailAddress"
           transform={(value) => value.trim()}
         />
         <ClientRegistrationField
           autoCapitalize="none"
           autoComplete="email"
+          autoFocus={focusField === 'confirmEmail'}
           control={form.control}
-          forceError={hasGroupError || !!errors.confirmEmail}
+          forceError={!!errors.confirmEmail}
           icon={<Mail {...iconProps} />}
           keyboardType="email-address"
           label="Confirme o e-mail"
           name="confirmEmail"
           returnKeyType="done"
-          showErrorMessage={false}
           textContentType="emailAddress"
           transform={(value) => value.trim()}
         />
-        <RegistrationErrorMessage message={errorMessage} />
         <Text className="font-sans text-[14px] leading-[1.5] text-gray-400">
           Ao clicar em continuar, você concorda com os{' '}
           <Text className="text-[#f0ff8c]">Termos de uso</Text> e está ciente do{' '}
@@ -161,8 +133,9 @@ function EmailStep() {
 function PhoneStep() {
   const router = useRouter();
   const form = useClientRegistrationForm();
-  const phone = form.watch('phone');
-  const hasPhone = onlyDigits(phone).length > 0;
+  const params = useLocalSearchParams<{ focus?: string }>();
+  const hasPhone = onlyDigits(form.watch('phone')).length > 0;
+  useFocusField(params.focus);
 
   return (
     <ClientRegistrationShell
@@ -179,17 +152,15 @@ function PhoneStep() {
           autoComplete="tel"
           autoFocus
           control={form.control}
+          forceError={!!form.formState.errors.phone}
           icon={<Phone {...iconProps} />}
           keyboardType="phone-pad"
           label="Insira seu telefone"
+          mask={PHONE_MASK}
+          maxLength={PHONE_MAX_LENGTH}
           name="phone"
           returnKeyType="done"
-          showErrorMessage={false}
           textContentType="telephoneNumber"
-          transform={formatPhone}
-        />
-        <RegistrationErrorMessage
-          message={form.formState.errors.phone?.message}
         />
       </View>
     </ClientRegistrationShell>
@@ -292,14 +263,17 @@ function OtpStep() {
 function PersonalStep() {
   const router = useRouter();
   const form = useClientRegistrationForm();
-  const data = form.watch();
+  const params = useLocalSearchParams<{ focus?: string }>();
+  const fullName = form.watch('fullName');
+  const cpf = form.watch('cpf');
   const errors = form.formState.errors;
-  const errorMessage = errors.fullName?.message ?? errors.cpf?.message;
+  const focusField = params.focus;
+  useFocusField(focusField);
 
   return (
     <ClientRegistrationShell
       activeStep={4}
-      disabled={!data.fullName.trim() || !onlyDigits(data.cpf)}
+      disabled={!fullName.trim() || !onlyDigits(cpf)}
       onContinue={async () => {
         if (await form.trigger(['fullName', 'cpf'])) {
           router.push(routeFor('password'));
@@ -314,27 +288,28 @@ function PersonalStep() {
           <ClientRegistrationField
             autoCapitalize="words"
             autoComplete="name"
-            autoFocus
+            autoFocus={focusField === 'fullName' || !focusField}
             control={form.control}
+            forceError={!!errors.fullName}
             icon={<UserRound {...iconProps} />}
             label="Nome completo"
             name="fullName"
             returnKeyType="next"
-            showErrorMessage={false}
             textContentType="name"
           />
           <ClientRegistrationField
+            autoFocus={focusField === 'cpf'}
             control={form.control}
+            forceError={!!errors.cpf}
             icon={<Contact {...iconProps} />}
             keyboardType="number-pad"
             label="CPF"
+            mask={CPF_MASK}
+            maxLength={CPF_MAX_LENGTH}
             name="cpf"
             returnKeyType="done"
-            showErrorMessage={false}
-            transform={formatCpf}
           />
         </View>
-        <RegistrationErrorMessage message={errorMessage} />
       </View>
     </ClientRegistrationShell>
   );
@@ -368,26 +343,36 @@ function PasswordRequirement({
 function PasswordStep() {
   const router = useRouter();
   const form = useClientRegistrationForm();
-  const data = form.watch();
+  const params = useLocalSearchParams<{ focus?: string }>();
+  const password = form.watch('password');
+  const confirmPassword = form.watch('confirmPassword');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
-  const hasLength = hasPasswordMinLength(data.password);
-  const hasSpecial = hasPasswordSpecialChar(data.password);
+  const hasLength = hasPasswordMinLength(password);
+  const hasSpecial = hasPasswordSpecialChar(password);
   const passwordsMatch =
-    data.confirmPassword.length > 0 && data.password === data.confirmPassword;
-  const passwordError =
-    form.formState.errors.password?.message ??
-    form.formState.errors.confirmPassword?.message;
+    confirmPassword.length > 0 && password === confirmPassword;
+  const errors = form.formState.errors;
+  const focusField = params.focus;
+  useFocusField(focusField);
 
   const createCustomer = useCreateCustomerMutation(form, {
     onSuccess: () => {
       router.push(routeFor('success'));
     },
     onFieldErrors: (fields) => {
-      const step = resolveStepForFields(fields);
-      if (step && step !== 'password') {
-        router.navigate(routeFor(step));
+      const firstField = resolveFirstCustomerErrorField(fields);
+      if (!firstField) return;
+
+      const step = resolveCustomerStepForField(firstField);
+      if (!step) return;
+
+      if (step === 'password') {
+        form.setFocus(firstField);
+        return;
       }
+
+      router.navigate(routeFor(step, firstField));
     },
   });
 
@@ -408,33 +393,31 @@ function PasswordStep() {
         </Text>
         <View className="w-full gap-4">
           <ClientRegistrationField
-            autoFocus
             autoComplete="new-password"
+            autoFocus={focusField === 'password' || !focusField}
             control={form.control}
-            forceError={!!form.formState.errors.password}
+            forceError={!!errors.password}
             icon={<LockKeyhole {...iconProps} />}
             label="Senha"
             name="password"
             secureTextEntry={!passwordVisible}
             secureVisible={passwordVisible}
-            showErrorMessage={false}
             textContentType="newPassword"
             onToggleSecure={() => setPasswordVisible((current) => !current)}
           />
           <ClientRegistrationField
             autoComplete="new-password"
+            autoFocus={focusField === 'confirmPassword'}
             control={form.control}
-            forceError={!!form.formState.errors.confirmPassword}
+            forceError={!!errors.confirmPassword}
             icon={<LockKeyhole {...iconProps} />}
             label="Confirmar Senha"
             name="confirmPassword"
             secureTextEntry={!confirmVisible}
             secureVisible={confirmVisible}
-            showErrorMessage={false}
             textContentType="newPassword"
             onToggleSecure={() => setConfirmVisible((current) => !current)}
           />
-          <RegistrationErrorMessage message={passwordError} />
           <View className="gap-3">
             <PasswordRequirement checked={hasLength}>
               {PASSWORD_MIN_LENGTH_MESSAGE}
@@ -481,7 +464,7 @@ function SuccessStep() {
 
 export default function ClientRegistrationStepPage() {
   const params = useLocalSearchParams<{ step?: string }>();
-  const step = params.step as RegistrationStep;
+  const step = params.step as ClientRegistrationStep;
 
   switch (step) {
     case 'phone':

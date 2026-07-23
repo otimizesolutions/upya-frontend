@@ -17,6 +17,7 @@ import { Toasts } from '@backpackapp-io/react-native-toast';
 import 'react-native-reanimated';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { AuthProvider, useAuth } from '@/domains/auth/contexts';
 import { useAuthStore } from '@/domains/auth/stores';
 import { backgroundColor } from '@/domains/theme/constants/colors';
@@ -105,15 +106,17 @@ export default function RootLayout() {
       className="flex-1 bg-background"
       style={{ flex: 1, backgroundColor }}
     >
-      <Toasts />
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <ThemeProvider value={AppTheme}>
-            <RootNavigator />
-            <StatusBar style="light" />
-          </ThemeProvider>
-        </AuthProvider>
-      </QueryClientProvider>
+      <KeyboardProvider preload={false}>
+        <Toasts />
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <ThemeProvider value={AppTheme}>
+              <RootNavigator />
+              <StatusBar style="light" />
+            </ThemeProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }

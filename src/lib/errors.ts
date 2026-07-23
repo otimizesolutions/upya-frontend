@@ -48,11 +48,20 @@ export const parseActionError = (
   return { nonFieldError: defaultMessage };
 };
 
+export type FlattenFieldErrorsOptions = {
+  /** Quando true, junta todas as mensagens do array com `\n`. */
+  joinMessages?: boolean;
+  /** Traduz cada mensagem antes de aplicar no formulário. */
+  translateMessages?: (messages: string[]) => string[];
+};
+
 /** Achata erros aninhados do DRF (`user.email` → path `user.email`). */
 export const flattenFieldErrors = (
   fieldErrors: Record<string, unknown>,
   prefix = '',
+  options: FlattenFieldErrorsOptions = {},
 ): Record<string, string> => {
+  const { joinMessages = false, translateMessages } = options;
   const result: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(fieldErrors)) {
@@ -61,22 +70,35 @@ export const flattenFieldErrors = (
     const path = prefix ? `${prefix}.${key}` : key;
 
     if (Array.isArray(value)) {
-      if (value.length > 0) {
-        result[path] = String(value[0]);
-      }
+      if (value.length === 0) continue;
+
+      const rawMessages = value.map(String);
+      const messages = translateMessages
+        ? translateMessages(rawMessages)
+        : rawMessages;
+
+      if (messages.length === 0) continue;
+
+      result[path] = joinMessages ? messages.join('\n') : messages[0];
       continue;
     }
 
     if (value && typeof value === 'object') {
       Object.assign(
         result,
-        flattenFieldErrors(value as Record<string, unknown>, path),
+        flattenFieldErrors(value as Record<string, unknown>, path, options),
       );
       continue;
     }
 
     if (value != null && value !== '') {
-      result[path] = String(value);
+      const rawMessages = [String(value)];
+      const messages = translateMessages
+        ? translateMessages(rawMessages)
+        : rawMessages;
+      if (messages[0]) {
+        result[path] = messages[0];
+      }
     }
   }
 
@@ -87,6 +109,10 @@ export type ApplyFormErrorsOptions = {
   defaultMessage?: string;
   /** Mapa de path da API → nome do campo no react-hook-form. */
   fieldMap?: Record<string, string>;
+  /** Quando true, junta todas as mensagens do array com `\n`. */
+  joinMessages?: boolean;
+  /** Traduz cada mensagem antes de aplicar no formulário. */
+  translateMessages?: (messages: string[]) => string[];
 };
 
 /**
@@ -104,6 +130,7 @@ export const applyFormErrors = (
       ? { defaultMessage: defaultMessageOrOptions }
       : defaultMessageOrOptions;
   const defaultMessage = options.defaultMessage ?? DEFAULT_MESSAGE;
+  const translateMessages = options.translateMessages;
 
   const { nonFieldError, fieldErrors } = parseActionError(
     error,
@@ -114,10 +141,16 @@ export const applyFormErrors = (
   if (fieldErrors) {
     const nestedNonField = fieldErrors.non_field_errors;
     if (Array.isArray(nestedNonField) && nestedNonField.length > 0) {
-      toast(String(nestedNonField[0]));
+      const messages = translateMessages
+        ? translateMessages(nestedNonField.map(String))
+        : nestedNonField.map(String);
+      if (messages[0]) toast(messages[0]);
     }
 
-    const flatErrors = flattenFieldErrors(fieldErrors);
+    const flatErrors = flattenFieldErrors(fieldErrors, '', {
+      joinMessages: options.joinMessages,
+      translateMessages,
+    });
 
     for (const [apiField, errorMessage] of Object.entries(flatErrors)) {
       const formField = options.fieldMap?.[apiField] ?? apiField;
@@ -127,7 +160,10 @@ export const applyFormErrors = (
   }
 
   if (nonFieldError) {
-    toast(nonFieldError);
+    const message = translateMessages
+      ? (translateMessages([nonFieldError])[0] ?? nonFieldError)
+      : nonFieldError;
+    toast(message);
   }
 
   return appliedFields;

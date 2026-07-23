@@ -1,15 +1,13 @@
 import { useMutation } from '@tanstack/react-query';
 import type { ProfessionalRegistrationData } from '@/domains/professional-registration/context';
-import { applyFormErrors, type Form } from '@/lib/errors';
-import {
-  PROFESSIONAL_REGISTRATION_FIELD_MAP,
-  toCreateProfessionalPayload,
-} from '../mappers';
+import type { Form } from '@/lib/errors';
+import type { ProfessionalCreate } from '@/gen/models/ProfessionalCreate';
+import { applyProfessionalRegistrationErrors } from '../errors';
+import { toCreateProfessionalPayload } from '../mappers';
 import {
   createProfessional,
   type CreateProfessionalPayload,
 } from '../services';
-import type { ProfessionalCreate } from '@/gen/models/ProfessionalCreate';
 
 type CreateProfessionalMutationOptions = {
   onFieldErrors?: (fields: (keyof ProfessionalRegistrationData)[]) => void;
@@ -27,9 +25,7 @@ export const useCreateProfessionalMutation = (
       options?.onSuccess?.(data);
     },
     onError: (err) => {
-      const fields = applyFormErrors(err, form, {
-        fieldMap: PROFESSIONAL_REGISTRATION_FIELD_MAP,
-      }) as (keyof ProfessionalRegistrationData)[];
+      const fields = applyProfessionalRegistrationErrors(err, form);
       options?.onFieldErrors?.(fields);
     },
   });
