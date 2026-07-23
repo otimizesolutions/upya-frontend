@@ -4,9 +4,11 @@
 */
 
 import * as z from 'zod'
+import { customerProfileSchema } from './customerProfileSchema'
 
-export const userSchema = z.object({
+export const userCustomerLoginSchema = z.object({
   id: z.int(),
+  customer: customerProfileSchema,
   last_login: z.iso.datetime().nullish(),
   name: z.string().max(160),
   email: z.email().max(254).optional(),

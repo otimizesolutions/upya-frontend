@@ -3,7 +3,7 @@
 * Do not edit manually.
 */
 
-export type UserProfessionalCreateValidationSchema = {
+export type UserCustomerCreateValidationSchema = {
     /**
      * @default Este campo é obrigatório.,Certifique-se de que este campo não tenha mais de 160 caracteres.
      * @type array | undefined

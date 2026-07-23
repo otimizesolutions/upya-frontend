@@ -5,7 +5,7 @@
 
 import * as z from 'zod'
 
-export const userProfessionalCreateSchema = z.object({
+export const userCustomerCreateSchema = z.object({
   id: z.int(),
   name: z.string().max(160),
   email: z.email().max(254).optional(),

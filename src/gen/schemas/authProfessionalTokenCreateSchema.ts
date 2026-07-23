@@ -4,12 +4,17 @@
 */
 
 import * as z from 'zod'
-import { authTokenResponseSchemaSchema } from './authTokenResponseSchemaSchema'
+import { professionalTokenObtainPairPermissionDeniedSchemaSchema } from './professionalTokenObtainPairPermissionDeniedSchemaSchema'
 import { professionalTokenObtainPairSchema } from './professionalTokenObtainPairSchema'
+import { userProfessionalLoginSchema } from './userProfessionalLoginSchema'
 
-export const authProfessionalTokenCreateStatus200Schema = authTokenResponseSchemaSchema
+export const authProfessionalTokenCreateStatus200Schema = userProfessionalLoginSchema
+
+export const authProfessionalTokenCreateStatus403Schema = professionalTokenObtainPairPermissionDeniedSchemaSchema
 
 export const authProfessionalTokenCreateResponseSchema = authProfessionalTokenCreateStatus200Schema
+
+export const authProfessionalTokenCreateErrorSchema = authProfessionalTokenCreateStatus403Schema
 
 export const authProfessionalTokenCreateBodySchemaJson = professionalTokenObtainPairSchema
 

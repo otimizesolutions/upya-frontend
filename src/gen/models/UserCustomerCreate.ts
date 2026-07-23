@@ -3,7 +3,7 @@
 * Do not edit manually.
 */
 
-export type UserProfessionalCreate = {
+export type UserCustomerCreate = {
     readonly id: number;
     /**
      * @maxLength 160

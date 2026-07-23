@@ -5,7 +5,7 @@
 
 import * as z from 'zod'
 
-export const userProfessionalCreateValidationSchemaSchema = z.object({
+export const userCustomerCreateValidationSchemaSchema = z.object({
   name: z.array(z.string()).optional().default(["Este campo é obrigatório.","Certifique-se de que este campo não tenha mais de 160 caracteres."]),
   email: z.array(z.string()).optional().default(["Este e-mail já está cadastrado."]),
   confirm_email: z.array(z.string()).optional().default(["Os e-mails não coincidem."]),

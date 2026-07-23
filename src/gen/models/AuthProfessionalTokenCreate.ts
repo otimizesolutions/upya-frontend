@@ -3,10 +3,13 @@
 * Do not edit manually.
 */
 
-import type { AuthTokenResponseSchema } from './AuthTokenResponseSchema'
 import type { ProfessionalTokenObtainPair } from './ProfessionalTokenObtainPair'
+import type { ProfessionalTokenObtainPairPermissionDeniedSchema } from './ProfessionalTokenObtainPairPermissionDeniedSchema'
+import type { UserProfessionalLogin } from './UserProfessionalLogin'
 
-export type AuthProfessionalTokenCreateStatus200 = AuthTokenResponseSchema;
+export type AuthProfessionalTokenCreateStatus200 = UserProfessionalLogin;
+
+export type AuthProfessionalTokenCreateStatus403 = ProfessionalTokenObtainPairPermissionDeniedSchema;
 
 export type AuthProfessionalTokenCreateBodyJson = ProfessionalTokenObtainPair;
 
@@ -25,9 +28,10 @@ export type AuthProfessionalTokenCreateOptions = {
 
 export type AuthProfessionalTokenCreateResponses = {
     "200": AuthProfessionalTokenCreateStatus200;
+    "403": AuthProfessionalTokenCreateStatus403;
 };
 
 /**
  * @description Union of all possible responses
 */
-export type AuthProfessionalTokenCreateResponse = AuthProfessionalTokenCreateStatus200;
+export type AuthProfessionalTokenCreateResponse = (AuthProfessionalTokenCreateStatus200 | AuthProfessionalTokenCreateStatus403);

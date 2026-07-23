@@ -3,8 +3,11 @@
 * Do not edit manually.
 */
 
-export type User = {
+import type { CustomerProfile } from './CustomerProfile'
+
+export type UserCustomerLogin = {
     readonly id: number;
+    readonly customer: CustomerProfile;
     /**
      * @description
      * Format: `date-time`
