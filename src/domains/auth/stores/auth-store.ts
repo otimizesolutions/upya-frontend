@@ -5,6 +5,12 @@ import { TOKEN_KEY } from '@/config';
 import { api } from '@/lib/axios';
 import type { User } from '@/domains/users/entities';
 import type { AuthRole } from '../entities';
+import { toSessionUser } from '../entities';
+
+/** Garante que só dados seguros da sessão sejam persistidos. */
+function sanitizeSessionUser(user: User): User {
+  return toSessionUser(user);
+}
 
 export interface AuthState {
   accessToken: string | null;
@@ -51,7 +57,7 @@ export const useAuthStore = create<AuthState>()(
         set({ accessToken: access, isAuthenticated: true });
       },
       setUser: (user) => {
-        set({ user });
+        set({ user: user ? sanitizeSessionUser(user) : null });
       },
       setRole: (role) => {
         set({ role });
@@ -62,7 +68,7 @@ export const useAuthStore = create<AuthState>()(
         set({
           accessToken: access,
           refreshToken: refresh,
-          user,
+          user: sanitizeSessionUser(user),
           role,
           isAuthenticated: true,
         });
@@ -86,7 +92,7 @@ export const useAuthStore = create<AuthState>()(
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
-        user: state.user,
+        user: state.user ? sanitizeSessionUser(state.user) : null,
         role: state.role,
       }),
       onRehydrateStorage: () => (state, error) => {

@@ -41,6 +41,19 @@ const API_ERROR_MESSAGE_PT: Record<string, string> = {
   // CREFITO
   'this crefito is already registered.': 'Este CREFITO já está cadastrado.',
 
+  // Login / autenticação
+  'e-mail ou senha inválidos': 'E-mail ou senha incorretos.',
+  'no active account found with the given credentials':
+    'E-mail ou senha incorretos.',
+  'this account does not have a customer profile.':
+    'Esta conta não possui perfil de cliente.',
+  'esta conta não possui perfil de cliente.':
+    'Esta conta não possui perfil de cliente.',
+  'this account does not have a professional profile.':
+    'Esta conta não possui perfil de profissional.',
+  'esta conta não possui perfil de profissional.':
+    'Esta conta não possui perfil de profissional.',
+
   // Já em português (normalização / idempotência)
   'este campo é obrigatório.': 'Este campo é obrigatório.',
   'certifique-se de que este campo não tenha mais de 160 caracteres.':

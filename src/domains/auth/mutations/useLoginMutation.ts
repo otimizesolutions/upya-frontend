@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { applyFormErrors, type Form } from '@/lib/errors';
-import { login, loginProfessional } from '../services';
+import type { Form } from '@/lib/errors';
+import { useAuthStore } from '@/domains/auth/stores';
 import type { AuthResponse, AuthRole } from '../entities';
 import { toSessionUser } from '../entities';
-import { useAuthStore } from '@/domains/auth/stores';
+import { applyLoginErrors } from '../login-errors';
+import { loginCustomer, loginProfessional } from '../services';
 
 interface MutationProps {
   email: string;
@@ -11,7 +12,9 @@ interface MutationProps {
   role: AuthRole;
 }
 
-export const useLoginMutation = (form: Form<Pick<MutationProps, 'email' | 'password'>>) => {
+export const useLoginMutation = (
+  form: Form<Pick<MutationProps, 'email' | 'password'>>,
+) => {
   const queryClient = useQueryClient();
   const setSession = useAuthStore((state) => state.setSession);
 
@@ -19,7 +22,7 @@ export const useLoginMutation = (form: Form<Pick<MutationProps, 'email' | 'passw
     mutationFn: ({ email, password, role }) =>
       role === 'professional'
         ? loginProfessional(email, password)
-        : login(email, password),
+        : loginCustomer(email, password),
     onSuccess: async (data, { role }) => {
       const sessionUser = toSessionUser(data.user);
       await setSession(data.access, data.refresh, sessionUser, role);
@@ -29,6 +32,6 @@ export const useLoginMutation = (form: Form<Pick<MutationProps, 'email' | 'passw
         await queryClient.refetchQueries({ queryKey: ['authenticated-user'] });
       }
     },
-    onError: (err) => applyFormErrors(err, form),
+    onError: (err) => applyLoginErrors(err, form),
   });
 };
