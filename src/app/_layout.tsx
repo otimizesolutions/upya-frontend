@@ -1,37 +1,79 @@
 import '../../global.css';
 
-import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useEffect } from 'react';
+import { ThemeProvider, type Theme } from 'expo-router/react-navigation';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   useFonts,
+  // Nomes oficiais do pacote @expo-google-fonts/inter
+  // eslint-disable-next-line camelcase
   Inter_400Regular,
-  Inter_500Medium,
+  // eslint-disable-next-line camelcase
   Inter_600SemiBold,
-  Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { Suspense, useEffect } from 'react';
 import { Toasts } from '@backpackapp-io/react-native-toast';
 import 'react-native-reanimated';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from '@/domains/auth/contexts';
-import { Text } from '@/components/ui/text';
-
-SplashScreen.preventAutoHideAsync();
+import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { AuthProvider, useAuth } from '@/domains/auth/contexts';
+import { useAuthStore } from '@/domains/auth/stores';
+import { backgroundColor } from '@/domains/theme/constants/colors';
 
 const queryClient = new QueryClient();
 
+const AppTheme: Theme = {
+  dark: true,
+  colors: {
+    primary: '#e8ff00',
+    background: backgroundColor,
+    card: backgroundColor,
+    text: '#ffffff',
+    border: '#1e1e1e',
+    notification: '#e8ff00',
+  },
+  fonts: {
+    regular: { fontFamily: 'System', fontWeight: '400' },
+    medium: { fontFamily: 'System', fontWeight: '500' },
+    bold: { fontFamily: 'System', fontWeight: '700' },
+    heavy: { fontFamily: 'System', fontWeight: '800' },
+  },
+};
+
+function RootNavigator() {
+  const { isAuthenticated } = useAuth();
+
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor },
+      }}
+    >
+      <Stack.Protected guard={!isAuthenticated}>
+        <Stack.Screen name="(public)" />
+      </Stack.Protected>
+
+      <Stack.Protected guard={isAuthenticated}>
+        <Stack.Screen name="(private)" />
+      </Stack.Protected>
+
+      <Stack.Screen name="+not-found" />
+    </Stack>
+  );
+}
+
 export default function RootLayout() {
-  const [loaded] = useFonts({
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
+  const setHasHydrated = useAuthStore((state) => state.setHasHydrated);
+
+  // Só as fontes usadas no primeiro paint (welcome / onboarding / botões).
+  /* eslint-disable camelcase */
+  const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
-    Inter_500Medium,
     Inter_600SemiBold,
-    Inter_700Bold,
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    'ClashDisplay-Regular': require('../assets/fonts/ClashDisplay-Regular.ttf'),
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     'ClashDisplay-Semibold': require('../assets/fonts/ClashDisplay-Semibold.ttf'),
     // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -39,47 +81,42 @@ export default function RootLayout() {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     'Panchang-Regular': require('../assets/fonts/Panchang-Regular.ttf'),
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    'Panchang-Semibold': require('../assets/fonts/Panchang-Semibold.ttf'),
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     'Panchang-Bold': require('../assets/fonts/Panchang-Bold.ttf'),
   });
+  /* eslint-enable camelcase */
+  const fontsReady = fontsLoaded || !!fontError;
 
+  // Fallback: não prender a UI se a hidratação do AsyncStorage atrasar.
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+    const timeout = setTimeout(() => {
+      if (!useAuthStore.getState().hasHydrated) {
+        setHasHydrated(true);
+      }
+    }, 500);
 
-  if (!loaded) {
+    return () => clearTimeout(timeout);
+  }, [setHasHydrated]);
+
+  if (!fontsReady || !hasHydrated) {
     return null;
   }
 
   return (
-    <Suspense
-      fallback={
-        <>
-          <Text>Absolute Loading...</Text>
-        </>
-      }
+    <GestureHandlerRootView
+      className="flex-1 bg-background"
+      style={{ flex: 1, backgroundColor }}
     >
-      <GestureHandlerRootView className="flex-1">
+      <KeyboardProvider preload={false}>
         <Toasts />
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <ThemeProvider value={DefaultTheme}>
-              <Stack
-                initialRouteName="index"
-                screenOptions={{ headerShown: false }}
-              >
-                <Stack.Screen name="index" options={{ headerShown: false }} />
-                <Stack.Screen name="auth" options={{ headerShown: false }} />
-                <Stack.Screen name="+not-found" />
-              </Stack>
-              <StatusBar style="auto" />
+            <ThemeProvider value={AppTheme}>
+              <RootNavigator />
+              <StatusBar style="light" />
             </ThemeProvider>
           </AuthProvider>
         </QueryClientProvider>
-      </GestureHandlerRootView>
-    </Suspense>
+      </KeyboardProvider>
+    </GestureHandlerRootView>
   );
 }

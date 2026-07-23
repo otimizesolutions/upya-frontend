@@ -41,11 +41,17 @@ module.exports = {
           900: '#034118',
           1000: '#002b00',
         },
+        neon: {
+          DEFAULT: '#e8ff00',
+          100: '#fdfff2',
+          200: '#f9ffe0',
+          600: '#e8ff00',
+        },
         content: {
           primary: '#172b4d',
           secondary: '#626f86',
         },
-        background: '#f6f6f6',
+        background: '#000000',
         foreground: '#172b4d',
         card: {
           DEFAULT: '#ffffff',
@@ -77,15 +83,15 @@ module.exports = {
       },
       fontFamily: {
         display: ['ClashDisplay-Bold'],
-        'display-regular': ['ClashDisplay-Regular'],
+        'display-regular': ['ClashDisplay-Semibold'],
         'display-semibold': ['ClashDisplay-Semibold'],
         heading: ['Panchang-Bold'],
         'heading-regular': ['Panchang-Regular'],
-        'heading-semibold': ['Panchang-Semibold'],
+        'heading-semibold': ['Panchang-Bold'],
         sans: ['Inter_400Regular'],
-        'sans-medium': ['Inter_500Medium'],
+        'sans-medium': ['Inter_600SemiBold'],
         'sans-semibold': ['Inter_600SemiBold'],
-        'sans-bold': ['Inter_700Bold'],
+        'sans-bold': ['Inter_600SemiBold'],
       },
       fontSize: {
         'display-lg': ['96px', { lineHeight: '104px', letterSpacing: '-1px' }],

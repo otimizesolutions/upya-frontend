@@ -1,46 +1,33 @@
-import { defineConfig } from '@kubb/core';
-import { pluginOas } from '@kubb/plugin-oas';
-import { pluginTs } from '@kubb/plugin-ts';
-import { pluginClient } from '@kubb/plugin-client';
-import { pluginReactQuery } from '@kubb/plugin-react-query';
+import { pluginTs } from '@kubb/plugin-ts'
+import { pluginZod } from '@kubb/plugin-zod'
+import { defineConfig } from 'kubb/config'
+import { loadEnvFile } from 'node:process'
 
-/**
- * Gera tipos e clients a partir do schema OpenAPI do backend.
- * Ajuste `input.path` se o schema estiver em outra URL/arquivo.
- *
- * Rodar: npm run generate:api
- */
+loadEnvFile()
+
+const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL
+
+if (!apiBaseUrl) {
+  throw new Error('EXPO_PUBLIC_API_BASE_URL não está definida no arquivo .env')
+}
+
 export default defineConfig({
-  root: '.',
-  input: {
-    path: 'http://localhost:8000/api/schema/',
-  },
+  input: `${apiBaseUrl}/api/docs/schema`,
   output: {
     path: './src/gen',
-    clean: false,
   },
   plugins: [
-    pluginOas({ validate: false }),
     pluginTs({
       output: {
-        path: './types',
+        path: './models',
+        mode: 'directory',
       },
     }),
-    pluginClient({
+    pluginZod({
       output: {
-        path: './clients',
-      },
-      importPath: '@/lib/kubb-client',
-      dataReturnType: 'data',
-    }),
-    pluginReactQuery({
-      output: {
-        path: './hooks',
-      },
-      client: {
-        importPath: '@/lib/kubb-client',
-        dataReturnType: 'data',
+        path: './schemas',
+        mode: 'directory',
       },
     }),
   ],
-});
+})

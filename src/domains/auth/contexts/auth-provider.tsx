@@ -17,9 +17,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const refreshToken = useAuthStore((state) => state.refreshToken);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const storedUser = useAuthStore((state) => state.user);
 
   useEffect(() => {
-    setUser(user ?? null);
+    // Evita apagar o user da sessão (ex.: login profissional) se /users/me/ falhar.
+    if (user) {
+      setUser(user);
+    }
   }, [setUser, user]);
 
   useEffect(() => {
@@ -64,9 +68,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return () => api.interceptors.response.eject(interceptorId);
   }, [clearAuth, queryClient, refreshToken, setAccessToken]);
 
+  const sessionUser = user ?? storedUser;
+
   return (
     <AuthContext.Provider
-      value={{ user: user ?? null, isAuthenticated: isAuthenticated || !!user }}
+      value={{
+        user: sessionUser,
+        isAuthenticated: isAuthenticated || !!sessionUser,
+      }}
     >
       {children}
     </AuthContext.Provider>
